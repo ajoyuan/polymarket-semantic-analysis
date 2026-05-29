@@ -22,16 +22,16 @@ A FastAPI-based backend service for analyzing Polymarket data and data visualiza
 ## Project Structure
 
 ```
-backend/
+backend-api/
 ├── main.py              
 ├── db.py                # database connection
 ├── requirements.txt     
-├── routers/
-│   ├── markets.py       # Market analysis endpoints
-│   ├── trades.py        # Time-series trade data endpoints
-│   └── users.py         # User behavior analytics endpoints
-└── data/
-    └── markets_classified.parquet
+└── routers/
+    ├── dashboard.py     # Dashboard endpoints
+    ├── markets.py       # Market analysis endpoints
+    ├── trades.py        # Time-series trade data endpoints
+    └── users.py         # User behavior analytics endpoints
+
 ```
   **Framework**: [FastAPI](https://fastapi.tiangolo.com/) 0.136.1  
   **Database**: [DuckDB](https://duckdb.org/) 1.5.2 with httpfs extension  

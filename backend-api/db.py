@@ -19,6 +19,8 @@ DATA_SOURCES = {
     "trades": "https://huggingface.co/datasets/SII-WANGZJ/Polymarket_data/resolve/main/trades.parquet",
     "users": "https://huggingface.co/datasets/SII-WANGZJ/Polymarket_data/resolve/main/users.parquet",
     "markets_classified_with_event_tags": str(BASE_DIR / "data" / "markets_classified_with_event_tags.parquet"),
+    "dashboard_catalog": str(BASE_DIR / "data" / "dashboard_catalog.parquet"),
+    "dashboard_timeseries": str(BASE_DIR / "data" / "dashboard_timeseries.parquet")
 }
 
 def init_db():
