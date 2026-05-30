@@ -35,12 +35,14 @@ def get_dashboard_timeseries(
     """
     query = f"""
         SELECT 
-            timestamp,
-            price,
-            zscore,
-            yes_volume,
-            no_volume,
-            trade_count,
+            timestamp, 
+            price, 
+            zscore, 
+            yes_volume, 
+            no_volume, 
+            yes_count, 
+            no_count, 
+            trade_count, 
             arimax
         FROM read_parquet('{DATA_SOURCES["dashboard_timeseries"]}')
         WHERE market_id = '{market_id}'
