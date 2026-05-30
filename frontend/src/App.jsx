@@ -1,0 +1,155 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import DashboardHeader from './components/DashboardHeader'; 
+import KPIGrid from './components/KPIGrid';
+import DualAxisChart from './components/DualAxisChart';
+import SankeyChart from './components/SankeyChart';
+
+export default function DashboardApp() {
+  const [catalog, setCatalog] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('timeline');
+  const [selectedGenre, setSelectedGenre] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    const fetchCatalog = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/dashboard/catalog");
+        const data = await response.json();
+        
+        setCatalog(data.catalog); 
+        
+        if (data.catalog.length > 0) {
+          setSelectedId(data.catalog[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load catalog:", error);
+      }
+    };
+    fetchCatalog();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedId) return;
+
+    const fetchTimeSeries = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8000/api/dashboard/timeseries?market_id=${selectedId}`);
+        const data = await response.json();
+        
+        setChartData(data.series);
+      } catch (error) {
+        console.error("Failed to load time series:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTimeSeries();
+  }, [selectedId]);
+
+  
+  const genres = ['All', ...new Set(catalog.map(m => m.category).filter(Boolean))];
+  const categories = ['All', ...new Set(catalog.map(m => m.predicted_label).filter(Boolean))];
+
+  const filteredCatalog = catalog.filter(m => {
+    const matchGenre = selectedGenre === 'All' || m.category === selectedGenre;
+    const matchCat = selectedCategory === 'All' || m.predicted_label === selectedCategory;
+    return matchGenre && matchCat;
+  });
+
+  const stats = useMemo(() => {
+    if (!chartData || chartData.length === 0) {
+      return { totalTrades: 0, maxZ: 0, anomalyPct: "0%", currentZScore: 0, currentArimax: 0 };
+    }
+    const totalTrades = chartData.reduce((sum, d) => sum + (d.trade_count || 0), 0);
+    const maxZ = Math.max(...chartData.map(d => d.zscore || 0));
+    const anomalyCount = chartData.filter(d => (d.zscore || 0) > 1.96).length;
+    const anomalyPct = ((anomalyCount / chartData.length) * 100).toFixed(1) + "%";
+    
+    const lastPoint = chartData[chartData.length - 1];
+    
+    return {
+      totalTrades,
+      maxZ,
+      anomalyPct,
+      currentZScore: lastPoint?.zscore || 0,
+      currentArimax: lastPoint?.arimax || 0
+    };
+  }, [chartData]);
+
+  const currentMeta = catalog.find(m => m.id === selectedId);
+  const currentLabel = currentMeta ? currentMeta.predicted_label : '';
+
+  return (
+    <div style={{ padding: '40px', background: '#f4f6f9', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 25px rgba(0,0,0,0.06)' }}>
+        
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', padding: '15px', background: '#edf2f7', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <div>
+            <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Genre:</label>
+            <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: 'pointer', minWidth: '150px' }}>
+              {genres.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Model Type:</label>
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: 'pointer', minWidth: '150px' }}>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', marginBottom: '25px', gap: '20px' }}>
+          <button
+            onClick={() => setActiveTab('timeline')}
+            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'timeline' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'timeline' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
+          >
+            Market Timeline
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('macro')}
+            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'macro' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'macro' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
+          >
+            Market category percentages
+          </button>
+        </div>
+
+        {activeTab === 'timeline' && (
+          <div className="fade-in-animation">
+            <DashboardHeader 
+              catalog={filteredCatalog} 
+              selectedId={selectedId} 
+              onSelect={setSelectedId} 
+            />
+            <KPIGrid stats={stats} currentLabel={currentLabel} />
+            
+            {loading ? (
+              <div style={{ height: '650px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0aec0' }}>
+                Fetching Live Data from DuckDB...
+              </div>
+            ) : (
+              <DualAxisChart chartData={chartData} />
+            )}
+          </div>
+        )}
+
+        {activeTab === 'macro' && (
+          <div className="fade-in-animation">
+            <SankeyChart 
+              catalog={catalog} 
+              selectedGenre={selectedGenre} 
+              selectedCategory={selectedCategory} 
+            />
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
