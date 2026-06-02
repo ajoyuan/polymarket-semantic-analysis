@@ -10,7 +10,7 @@ export default function DashboardApp() {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('timeline');
+  const [activeTab, setActiveTab] = useState('macro');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -60,6 +60,18 @@ export default function DashboardApp() {
     const matchCat = selectedCategory === 'All' || m.predicted_label === selectedCategory;
     return matchGenre && matchCat;
   });
+  
+  useEffect(() => {
+    if (filteredCatalog.length > 0) {
+      const marketStillExists = filteredCatalog.find(m => m.id === selectedId);
+      
+      if (!marketStillExists) {
+        setSelectedId(filteredCatalog[0].id);
+      }
+    } else {
+      setSelectedId(null);
+    }
+  }, [filteredCatalog]);
 
   const stats = useMemo(() => {
     if (!chartData || chartData.length === 0) {
@@ -106,18 +118,20 @@ export default function DashboardApp() {
 
         <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', marginBottom: '25px', gap: '20px' }}>
           <button
+            onClick={() => setActiveTab('macro')}
+            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'macro' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'macro' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
+          >
+            Market category percentages
+          </button>
+          
+          <button
             onClick={() => setActiveTab('timeline')}
             style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'timeline' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'timeline' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
           >
             Market Timeline
           </button>
           
-          <button
-            onClick={() => setActiveTab('macro')}
-            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'macro' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'macro' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
-          >
-            Market category percentages
-          </button>
+
         </div>
 
         {activeTab === 'timeline' && (
@@ -141,6 +155,27 @@ export default function DashboardApp() {
 
         {activeTab === 'macro' && (
           <div className="fade-in-animation">
+          
+            <div style={{ 
+              background: '#ebf8ff', 
+              borderLeft: '4px solid #3182ce', 
+              padding: '20px 25px', 
+              borderRadius: '8px', 
+              marginBottom: '25px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+            }}>
+              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
+                Welcome to the Polymarket Analytics Platform
+              </h2>
+              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
+                This platform tracks, analyzes, and categorizes <strong>{catalog.length.toLocaleString()}</strong> prediction markets. 
+                The flow chart below illustrates how these markets are distributed across real-world genres (like Politics or Crypto) and their underlying mathematical models (like Stochastic or Objective Outcome).
+              </p>
+              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
+                <strong>How to use this page:</strong> Use the dropdown filters above to isolate specific sectors. Hover over the thick colored blocks to see exact market counts, or trace the paths to see how the categories connect!
+              </p>
+            </div>
+
             <SankeyChart 
               catalog={catalog} 
               selectedGenre={selectedGenre} 

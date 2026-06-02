@@ -27,9 +27,20 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory }
     };
 
     const links = [];
+    const nodeRealTotals = new Map();
+
     Object.entries(flowCounts).forEach(([key, value]) => {
       const [sourceName, targetName] = key.split('|');
-      links.push({ source: getNodeIdx(sourceName), target: getNodeIdx(targetName), value });
+      
+      nodeRealTotals.set(sourceName, (nodeRealTotals.get(sourceName) || 0) + value);
+      nodeRealTotals.set(targetName, (nodeRealTotals.get(targetName) || 0) + value);
+
+      links.push({ 
+        source: getNodeIdx(sourceName), 
+        target: getNodeIdx(targetName), 
+        realValue: value,               
+        value: Math.sqrt(value)         
+      });
     });
 
     const nodes = Array.from(nodesMap.values()).map(n => ({ name: n.name }));
@@ -61,10 +72,8 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory }
 
     const getLinkOpacity = (d) => {
       if (selectedGenre === 'All' && selectedCategory === 'All') return 0.35;
-      
       const matchesGenre = selectedGenre === 'All' || d.source.name === selectedGenre;
       const matchesCategory = selectedCategory === 'All' || d.target.name === selectedCategory;
-      
       return (matchesGenre && matchesCategory) ? 0.8 : 0.05; 
     };
 
@@ -79,37 +88,36 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory }
     linkGroup.append("path")
       .attr("d", sankeyLinkHorizontal())
       .attr("stroke", d => getTargetColor(d.target.name))
-      .attr("stroke-width", d => Math.max(1, d.width))
-      .attr("stroke-opacity", d => getLinkOpacity(d)) 
-      .style("transition", "stroke-opacity 0.4s ease") // Smooth fade animation
-      .on("mouseover", function(e, d) { d3.select(this).attr("stroke-opacity", 0.9); })
-      .on("mouseout", function(e, d) { d3.select(this).attr("stroke-opacity", getLinkOpacity(d)); })
-      .append("title")
-      
-      linkGroup.append("path")
-      .attr("d", sankeyLinkHorizontal())
-      .attr("stroke", d => getTargetColor(d.target.name))
-      .attr("stroke-width", d => Math.max(1, d.width))
+      .attr("stroke-width", d => Math.max(1, d.width)) 
       .attr("stroke-opacity", d => getLinkOpacity(d)) 
       .style("transition", "stroke-opacity 0.4s ease") 
       .on("mouseover", function(e, d) { d3.select(this).attr("stroke-opacity", 0.9); })
       .on("mouseout", function(e, d) { d3.select(this).attr("stroke-opacity", getLinkOpacity(d)); })
       .append("title")
       .text(d => {
-        const percentage = ((d.value / totalMarkets) * 100).toFixed(1);
-        return `${d.source.name} → ${d.target.name}\n${d.value} Markets (${percentage}% of system)`;
+        const rawPercent = (d.realValue / totalMarkets) * 100;
+        const displayPercent = rawPercent < 0.1 ? rawPercent.toFixed(3) : rawPercent.toFixed(1);
+        return `${d.source.name} → ${d.target.name}\n${d.realValue} Markets (${displayPercent}% of the collected markets)`;
       });
 
     const nodeGroup = svg.append("g")
-      .selectAll("rect")
+      .selectAll("g.node")
       .data(graphNodes)
       .enter()
       .append("g");
 
+    nodeGroup.append("title")
+      .text(d => {
+        const actualTotal = nodeRealTotals.get(d.name) || 0;
+        const rawPercent = (actualTotal / totalMarkets) * 100;
+        const displayPercent = rawPercent < 0.1 ? rawPercent.toFixed(3) : rawPercent.toFixed(1);
+        return `${d.name}\nTotal: ${actualTotal} Markets (${displayPercent}% of the collected markets)`;
+      });
+
     nodeGroup.append("rect")
       .attr("x", d => d.x0)
       .attr("y", d => d.y0)
-      .attr("height", d => d.y1 - d.y0)
+      .attr("height", d => Math.max(1.5, d.y1 - d.y0))
       .attr("width", d => d.x1 - d.x0)
       .attr("fill", d => getTargetColor(d.name))
       .attr("opacity", d => {
@@ -118,9 +126,15 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory }
         return 0.3;
       })
       .style("transition", "opacity 0.4s ease")
-      .attr("rx", 3) 
-      .append("title")
-      .text(d => `${d.name}\nTotal: ${d.value}`);
+      .attr("rx", 3);
+
+    nodeGroup.append("rect")
+      .attr("x", d => d.x0 - 5) // Extend 5px to the left and right
+      .attr("y", d => ((d.y1 + d.y0) / 2) - (Math.max(24, d.y1 - d.y0) / 2))
+      .attr("height", d => Math.max(24, d.y1 - d.y0))
+      .attr("width", d => (d.x1 - d.x0) + 10)
+      .attr("fill", "transparent")
+      .style("cursor", "crosshair");
 
     nodeGroup.append("text")
       .attr("x", d => d.x0 < width / 2 ? d.x1 + 8 : d.x0 - 8)
@@ -137,7 +151,8 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory }
         if (d.name === selectedGenre || d.name === selectedCategory) return 1.0;
         return 0.3;
       })
-      .style("transition", "opacity 0.4s ease");
+      .style("transition", "opacity 0.4s ease")
+      .style("pointer-events", "none");
 
   }, [catalog, selectedGenre, selectedCategory]); 
 
