@@ -186,6 +186,26 @@ export default function DashboardApp() {
 
         {activeTab === 'timeline' && (
           <div className="fade-in-animation">
+            
+            <div style={{ 
+              background: '#ebf8ff', 
+              borderLeft: '4px solid #3182ce', 
+              padding: '20px 25px', 
+              borderRadius: '8px', 
+              marginBottom: '25px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+            }}>
+              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
+                Market Timeline Analysis
+              </h2>
+              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
+                Select an individual market from your filtered catalog below to visualize its real-time trading volume, probability price, and mathematical volatility.
+              </p>
+              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
+                <strong>How to use this page:</strong> Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, highlighting any chaotic, news-driven anomalies. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals).
+              </p>
+            </div>
+
             <DashboardHeader 
               catalog={filteredCatalog} 
               selectedId={selectedId} 
