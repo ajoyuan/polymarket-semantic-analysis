@@ -22,7 +22,7 @@ export default function CertaintyVolumeRidgeline({ data, error }) {
 
     const width = 1200;
     const height = 745;
-    const margin = { top: 95, right: 25, bottom: 50, left: 110 };
+    const margin = { top: 120, right: 25, bottom: 50, left: 110 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -54,6 +54,11 @@ export default function CertaintyVolumeRidgeline({ data, error }) {
     svg.append('text').attr('x', width / 2).attr('y', 28).attr('text-anchor', 'middle')
       .style('font-size', '17px').style('font-weight', 'bold').style('fill', '#2d3748')
       .text('Certainty (TWAP) by traded-volume band, per market type');
+
+    // Subtitle
+    svg.append('text').attr('x', width / 2).attr('y', 48).attr('text-anchor', 'middle')
+      .style('font-size', '12px').style('fill', '#718096')
+      .text('Certainty measures how certain the market is about its outcome. Each ridge shows the distribution of certainties for markets in a given traded-volume band, colored by market type.');
 
     types.forEach((type, j) => {
       const x0 = colX(j);
