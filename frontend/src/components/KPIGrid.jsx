@@ -61,7 +61,7 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
   // TWAP-based certainty: a time-weighted confidence in [0, 1] where 1 = the
   // market is fully decided and 0 = a coin-flip. Colour from red (uncertain) to
   // green (decided).
-  const twapScore = certainty?.certainty_twap;
+  const twapScore = certainty?.uncertainty_twap;
   const hasTwap = twapScore !== undefined && twapScore !== null;
   const safeTwap = hasTwap ? twapScore.toFixed(4) : "—";
   let twapColor = "#a0aec0";
@@ -76,26 +76,6 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
     } else {
       twapColor = "#e53e3e";
       twapText = "Near coin-flip on the predictions";
-    }
-  }
-
-  // VWAP-based certainty: a volume-weighted confidence in [0, 1], same scale as
-  // TWAP. Lives under metrics.certainty_vwap in the API response.
-  const vwapScore = certainty?.metrics?.certainty_vwap;
-  const hasVwap = vwapScore !== undefined && vwapScore !== null;
-  const safeVwap = hasVwap ? vwapScore.toFixed(4) : "—";
-  let vwapColor = "#a0aec0";
-  let vwapText = "No certainty data";
-  if (hasVwap) {
-    if (vwapScore >= 0.66) {
-      vwapColor = "#38a169";
-      vwapText = "Market is largely decided";
-    } else if (vwapScore >= 0.33) {
-      vwapColor = "#dd6b20";
-      vwapText = "Market is contested";
-    } else {
-      vwapColor = "#e53e3e";
-      vwapText = "Near coin-flip";
     }
   }
 

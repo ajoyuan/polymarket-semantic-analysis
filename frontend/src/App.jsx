@@ -12,6 +12,9 @@ export default function DashboardApp() {
   const [uncertainty, setUncertainty] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [ridgeline, setRidgeline] = useState(null);
+  const [ridgelineError, setRidgelineError] = useState(null);
+
   const [activeTab, setActiveTab] = useState('macro');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -20,12 +23,14 @@ export default function DashboardApp() {
     const fetchCatalog = async () => {
       try {
         const response = await fetch("http://localhost:8000/api/dashboard/catalog");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        
-        setCatalog(data.catalog); 
-        
-        if (data.catalog.length > 0) {
-          setSelectedId(data.catalog[0].id);
+
+        const list = Array.isArray(data?.catalog) ? data.catalog : [];
+        setCatalog(list);
+
+        if (list.length > 0) {
+          setSelectedId(list[0].id);
         }
       } catch (error) {
         console.error("Failed to load catalog:", error);
@@ -72,6 +77,24 @@ export default function DashboardApp() {
     };
     fetchUncertainty();
   }, [selectedId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRidgeline = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/dashboard/certainty_volume_ridgeline");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!cancelled) setRidgeline(data);
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Failed to load ridgeline data:", error);
+        setRidgelineError(error.message);
+      }
+    };
+    fetchRidgeline();
+    return () => { cancelled = true; };
+  }, []);
 
 
   const genres = ['All', ...new Set(catalog.map(m => m.category).filter(Boolean))];
@@ -168,7 +191,7 @@ export default function DashboardApp() {
               selectedId={selectedId} 
               onSelect={setSelectedId} 
             />
-            <KPIGrid stats={stats} currentLabel={currentLabel} uncertainty={uncertainty} />
+            <KPIGrid stats={stats} currentLabel={currentLabel} certainty={uncertainty} />
             
             {loading ? (
               <div style={{ height: '650px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0aec0' }}>
@@ -208,17 +231,19 @@ export default function DashboardApp() {
               selectedCategory={selectedCategory} 
               
               onLinkClick={(clickedGenre, clickedCategory) => {
-                setSelectedGenre(clickedGenre);
-                setSelectedCategory(clickedCategory);
+                const alreadySelected =
+                  selectedGenre === clickedGenre && selectedCategory === clickedCategory;
+                setSelectedGenre(alreadySelected ? 'All' : clickedGenre);
+                setSelectedCategory(alreadySelected ? 'All' : clickedCategory);
               }}
-              
+
               onNodeClick={(nodeName) => {
                 if (genres.includes(nodeName)) {
-                  setSelectedGenre(nodeName);
-                  setSelectedCategory('All'); 
+                  setSelectedGenre(selectedGenre === nodeName ? 'All' : nodeName);
+                  setSelectedCategory('All');
                 } else if (categories.includes(nodeName)) {
-                  setSelectedCategory(nodeName);
-                  setSelectedGenre('All');    
+                  setSelectedCategory(selectedCategory === nodeName ? 'All' : nodeName);
+                  setSelectedGenre('All');
                 }
               }}
             />
@@ -259,7 +284,7 @@ export default function DashboardApp() {
 
         {activeTab === 'certainty' && (
           <div className="fade-in-animation">
-            <CertaintyVolumeRidgeline />
+            <CertaintyVolumeRidgeline data={ridgeline} error={ridgelineError} />
           </div>
         )}
 

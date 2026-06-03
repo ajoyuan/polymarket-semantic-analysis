@@ -42,5 +42,10 @@ def init_db():
         raise e
 
 def get_db():
-
-    return con
+    
+    # For concurrency
+    cur = con.cursor()
+    try:
+        yield cur
+    finally:
+        cur.close()

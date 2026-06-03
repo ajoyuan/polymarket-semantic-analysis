@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const COLORS = {
@@ -8,43 +8,17 @@ const COLORS = {
 };
 const OVERLAP = 1.7;
 
-const ENDPOINT = 'http://localhost:8000/api/dashboard/certainty_volume_ridgeline';
-
-// Module-scoped cache of the fetch.
-let ridgelineCache = null;
-function loadRidgeline() {
-  if (!ridgelineCache) {
-    ridgelineCache = fetch(ENDPOINT).then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    });
-  }
-  return ridgelineCache;
-}
-
-export default function CertaintyVolumeRidgeline() {
+export default function CertaintyVolumeRidgeline({ data, error }) {
   const svgRef = useRef();
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadRidgeline()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(e => {
-        if (cancelled) return;
-        console.error('Failed to load ridgeline data:', e);
-        setError(e.message);
-        ridgelineCache = null;
-      });
-    return () => { cancelled = true; };
-  }, []);
 
   useEffect(() => {
     if (!data) return;
 
     const { x, peak, bands, types, cells } = data;
     const cellMap = new Map(cells.map(c => [`${c.type}|${c.band}`, c]));
+    const totalByType = new Map(types.map(t => [
+      t, d3.sum(cells.filter(c => c.type === t), c => c.n),
+    ]));
 
     const width = 1200;
     const height = 745;
@@ -88,6 +62,10 @@ export default function CertaintyVolumeRidgeline() {
       svg.append('text').attr('x', x0 + colW / 2).attr('y', margin.top - 26)
         .attr('text-anchor', 'middle').style('font-size', '14px').style('font-weight', 'bold')
         .style('fill', COLORS[type]).text(type);
+
+      svg.append('text').attr('x', x0 + colW / 2).attr('y', margin.top - 11)
+        .attr('text-anchor', 'middle').style('font-size', '11px').style('fill', '#718096')
+        .text(`${(totalByType.get(type) || 0).toLocaleString()} markets`);
 
       bands.forEach((band, i) => {
         const base = baseline(i);
