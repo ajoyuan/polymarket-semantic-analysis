@@ -104,16 +104,16 @@ The pipeline scripts in `backend/src/` use additional libraries not in the API's
 `requirements.txt`:
 
 ```bash
-pip install torch transformers duckdb pandas numpy scikit-learn matplotlib huggingface_hub tqdm requests
+cd backend
+python -m venv .venv && source .venv/bin/activate    # optional but recommended
+pip install -r requirements.txt
 ```
 
-## Execution
+## Development
 
 ### Run the demo (API + dashboard)
 
-You need two terminals.
-
-**Terminal 1 — start the API** (serves on `http://localhost:8000`):
+**Start the API** (serves on `http://localhost:8000`):
 
 ```bash
 cd backend-api
@@ -123,7 +123,7 @@ uvicorn main:app --reload
 Verify it is up: open <http://localhost:8000/docs> for the interactive Swagger UI, or
 <http://localhost:8000/> which returns `{"message": "Polymarket Visual Analytics API is running"}`.
 
-**Terminal 2 — start the dashboard** (serves on `http://localhost:5173`):
+**Start the dashboard** (serves on `http://localhost:5173`):
 
 ```bash
 cd frontend
@@ -140,9 +140,6 @@ the market catalog from the API, and you can:
   certainty score.
 - Inspect the **ridgeline** plot of certainty distributions across traded-volume bands.
 
-> The dashboard expects the API at `http://localhost:8000`. If you run the API elsewhere,
-> update the `fetch(...)` URLs in `frontend/src/App.jsx` (and the components) accordingly.
-
 ### Regenerate the data (optional)
 
 Run from the `backend/src/` directory. Each script reads/writes Parquet under `backend/data/`:
@@ -151,9 +148,9 @@ Run from the `backend/src/` directory. Each script reads/writes Parquet under `b
 cd backend/src
 
 python train.py                          # train roberta-large classifier -> backend/models/
-python classify_markets.py               # label every market -> markets_classified.parquet
-python fetch_event_tags.py               # enrich with Gamma event tags
-python calculate_uncertainty_with_tags.py# compute certainty scores -> market_uncertainty.parquet
+python classify_markets.py                # label every market -> markets_classified.parquet
+python fetch_event_tags.py                # enrich with Gamma event tags
+python calculate_uncertainty_with_tags.py # compute certainty scores -> market_uncertainty.parquet
 ```
 
 After regenerating, copy the relevant outputs from `backend/data/` into `backend-api/data/`

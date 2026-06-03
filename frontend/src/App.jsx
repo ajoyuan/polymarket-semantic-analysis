@@ -145,17 +145,17 @@ export default function DashboardApp() {
     <div style={{ padding: '40px', background: '#f4f6f9', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 25px rgba(0,0,0,0.06)' }}>
         
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', padding: '15px', background: '#edf2f7', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', padding: '15px', background: '#edf2f7', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: activeTab === 'certainty' ? 0.5 : 1 }}>
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Genre:</label>
-            <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: 'pointer', minWidth: '150px' }}>
+            <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} disabled={activeTab === 'certainty'} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: activeTab === 'certainty' ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
               {genres.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
           
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Model Type:</label>
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: 'pointer', minWidth: '150px' }}>
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} disabled={activeTab === 'certainty'} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: activeTab === 'certainty' ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
