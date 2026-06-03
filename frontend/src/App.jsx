@@ -3,12 +3,17 @@ import DashboardHeader from './components/DashboardHeader';
 import KPIGrid from './components/KPIGrid';
 import DualAxisChart from './components/DualAxisChart';
 import SankeyChart from './components/SankeyChart';
+import CertaintyVolumeRidgeline from './components/CertaintyVolumeRidgeline';
 
 export default function DashboardApp() {
   const [catalog, setCatalog] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [uncertainty, setUncertainty] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [ridgeline, setRidgeline] = useState(null);
+  const [ridgelineError, setRidgelineError] = useState(null);
 
   const [activeTab, setActiveTab] = useState('macro');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -18,12 +23,14 @@ export default function DashboardApp() {
     const fetchCatalog = async () => {
       try {
         const response = await fetch("http://localhost:8000/api/dashboard/catalog");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        
-        setCatalog(data.catalog); 
-        
-        if (data.catalog.length > 0) {
-          setSelectedId(data.catalog[0].id);
+
+        const list = Array.isArray(data?.catalog) ? data.catalog : [];
+        setCatalog(list);
+
+        if (list.length > 0) {
+          setSelectedId(list[0].id);
         }
       } catch (error) {
         console.error("Failed to load catalog:", error);
@@ -51,7 +58,45 @@ export default function DashboardApp() {
     fetchTimeSeries();
   }, [selectedId]);
 
-  
+  useEffect(() => {
+    if (!selectedId) return;
+
+    const fetchUncertainty = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/dashboard/uncertainty?market_id=${selectedId}`);
+        if (!response.ok) {
+          setUncertainty(null);
+          return;
+        }
+        const data = await response.json();
+        setUncertainty(data);
+      } catch (error) {
+        console.error("Failed to load uncertainty:", error);
+        setUncertainty(null);
+      }
+    };
+    fetchUncertainty();
+  }, [selectedId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRidgeline = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/dashboard/certainty_volume_ridgeline");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!cancelled) setRidgeline(data);
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Failed to load ridgeline data:", error);
+        setRidgelineError(error.message);
+      }
+    };
+    fetchRidgeline();
+    return () => { cancelled = true; };
+  }, []);
+
+
   const genres = ['All', ...new Set(catalog.map(m => m.category).filter(Boolean))];
   const categories = ['All', ...new Set(catalog.map(m => m.predicted_label).filter(Boolean))];
 
@@ -130,6 +175,13 @@ export default function DashboardApp() {
           >
             Market Timeline
           </button>
+
+          <button
+            onClick={() => setActiveTab('certainty')}
+            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'certainty' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'certainty' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
+          >
+            Certainty vs Volume
+          </button>
         </div>
 
         {activeTab === 'timeline' && (
@@ -139,7 +191,7 @@ export default function DashboardApp() {
               selectedId={selectedId} 
               onSelect={setSelectedId} 
             />
-            <KPIGrid stats={stats} currentLabel={currentLabel} />
+            <KPIGrid stats={stats} currentLabel={currentLabel} certainty={uncertainty} />
             
             {loading ? (
               <div style={{ height: '650px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0aec0' }}>
@@ -153,7 +205,6 @@ export default function DashboardApp() {
 
         {activeTab === 'macro' && (
           <div className="fade-in-animation">
-          
             <div style={{ 
               background: '#ebf8ff', 
               borderLeft: '4px solid #3182ce', 
@@ -180,17 +231,19 @@ export default function DashboardApp() {
               selectedCategory={selectedCategory} 
               
               onLinkClick={(clickedGenre, clickedCategory) => {
-                setSelectedGenre(clickedGenre);
-                setSelectedCategory(clickedCategory);
+                const alreadySelected =
+                  selectedGenre === clickedGenre && selectedCategory === clickedCategory;
+                setSelectedGenre(alreadySelected ? 'All' : clickedGenre);
+                setSelectedCategory(alreadySelected ? 'All' : clickedCategory);
               }}
-              
+
               onNodeClick={(nodeName) => {
                 if (genres.includes(nodeName)) {
-                  setSelectedGenre(nodeName);
-                  setSelectedCategory('All'); 
+                  setSelectedGenre(selectedGenre === nodeName ? 'All' : nodeName);
+                  setSelectedCategory('All');
                 } else if (categories.includes(nodeName)) {
-                  setSelectedCategory(nodeName);
-                  setSelectedGenre('All');    
+                  setSelectedCategory(selectedCategory === nodeName ? 'All' : nodeName);
+                  setSelectedGenre('All');
                 }
               }}
             />
@@ -226,6 +279,12 @@ export default function DashboardApp() {
               </button>
             </div>
 
+          </div>
+        )}
+
+        {activeTab === 'certainty' && (
+          <div className="fade-in-animation">
+            <CertaintyVolumeRidgeline data={ridgeline} error={ridgelineError} />
           </div>
         )}
 

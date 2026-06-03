@@ -20,7 +20,8 @@ DATA_SOURCES = {
     "users": "https://huggingface.co/datasets/SII-WANGZJ/Polymarket_data/resolve/main/users.parquet",
     "markets_classified_with_event_tags": str(BASE_DIR / "data" / "markets_classified_with_event_tags.parquet"),
     "dashboard_catalog": str(BASE_DIR / "data" / "dashboard_catalog.parquet"),
-    "dashboard_timeseries": str(BASE_DIR / "data" / "dashboard_timeseries.parquet")
+    "dashboard_timeseries": str(BASE_DIR / "data" / "dashboard_timeseries.parquet"),
+    "market_uncertainty": str(BASE_DIR / "data" / "market_uncertainty.parquet")
 }
 
 def init_db():
@@ -41,5 +42,10 @@ def init_db():
         raise e
 
 def get_db():
-
-    return con
+    
+    # For concurrency
+    cur = con.cursor()
+    try:
+        yield cur
+    finally:
+        cur.close()
