@@ -72,8 +72,8 @@ export default function DualAxisChart({ chartData }) {
     const height = 650; 
     const margin = { top: 40, right: 60, bottom: 40, left: 60 };
 
-    const topChartBot = 300; 
-    const bottomChartTop = 360; 
+    const topChartBot = 280; 
+    const bottomChartTop = 380;
     const bottomChartBot = height - margin.bottom;
 
     const svg = d3.select(svgRef.current);
@@ -100,9 +100,9 @@ export default function DualAxisChart({ chartData }) {
 
     if (showAnomalies) {
       focusTop.selectAll(".anom-top").data(anomalyRegions).enter().append("rect").attr("class", "anom-top") 
-        .attr("x", d => xScale(d.start)).attr("y", margin.top).attr("width", d => Math.max(2, xScale(d.end) - xScale(d.start))).attr("height", topChartBot - margin.top).attr("fill", "rgba(229, 62, 62, 0.08)");
+        .attr("x", d => xScale(d.start)).attr("y", margin.top).attr("width", d => Math.max(2, xScale(d.end) - xScale(d.start))).attr("height", topChartBot - margin.top).attr("fill", "rgba(153, 27, 27, 0.15)");
       focusBot.selectAll(".anom-bot").data(anomalyRegions).enter().append("rect").attr("class", "anom-bot") 
-        .attr("x", d => xScale(d.start)).attr("y", bottomChartTop).attr("width", d => Math.max(2, xScale(d.end) - xScale(d.start))).attr("height", bottomChartBot - bottomChartTop).attr("fill", "rgba(229, 62, 62, 0.08)");
+        .attr("x", d => xScale(d.start)).attr("y", bottomChartTop).attr("width", d => Math.max(2, xScale(d.end) - xScale(d.start))).attr("height", bottomChartBot - bottomChartTop).attr("fill", "rgba(153, 27, 27, 0.15)");
     }
 
     const numTicks = Math.min(8, data.length - 1);
@@ -111,11 +111,51 @@ export default function DualAxisChart({ chartData }) {
     const xAxisGroupTop = svg.append("g").attr("class", "x-axis").attr("transform", `translate(0,${topChartBot})`).call(xAxis).attr("color", "#a0aec0");
     const xAxisGroupBot = svg.append("g").attr("class", "x-axis").attr("transform", `translate(0,${bottomChartBot})`).call(xAxis).attr("color", "#a0aec0");
 
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - 40)
+      .attr("x", -(margin.top + (topChartBot - margin.top) / 2)) 
+      .style("text-anchor", "middle")
+      .style("fill", "#3182ce")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Probability Price (%)");
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", topChartBot + 35)
+      .style("text-anchor", "middle")
+      .style("fill", "#718096")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Timeline (Local Time)");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - 40)
+      .attr("x", -(bottomChartTop + (bottomChartBot - bottomChartTop) / 2))
+      .style("text-anchor", "middle")
+      .style("fill", "#e53e3e")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Volatility (Z-Score)");
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", bottomChartBot + 35)
+      .style("text-anchor", "middle")
+      .style("fill", "#718096")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Timeline (Local Time)");
+
+
     svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yPriceScale).ticks(5)).attr("color", "#3182ce")
       .call(g => {
         g.append("circle").attr("cx", -25).attr("cy", margin.top - 19).attr("r", 7).attr("fill", "#edf2f7").attr("stroke", "#cbd5e0");
         g.append("text").attr("x", -25).attr("y", margin.top - 18).text("i").attr("text-anchor", "middle").attr("alignment-baseline", "middle").style("font-family", "serif").style("font-style", "italic").style("fill", "#4a5568").style("font-size", "11px");
-        g.append("text").attr("x", -10).attr("y", margin.top - 15).attr("fill", "#3182ce").attr("text-anchor", "start").style("font-weight", "bold").text("Probability Price");
+        g.append("text").attr("x", -10).attr("y", margin.top - 15).attr("fill", "#3182ce").attr("text-anchor", "start").style("font-weight", "bold").text("Probability Price").style("font-size", "14px");
         
         g.append("rect").attr("x", -35).attr("y", margin.top - 28).attr("width", 20).attr("height", 20).attr("fill", "transparent").style("cursor", "help")
           .on("mouseover", () => {
@@ -136,14 +176,14 @@ export default function DualAxisChart({ chartData }) {
       .call(g => {
         g.append("circle").attr("cx", -25).attr("cy", bottomChartTop - 19).attr("r", 7).attr("fill", "#edf2f7").attr("stroke", "#cbd5e0");
         g.append("text").attr("x", -25).attr("y", bottomChartTop - 18).text("i").attr("text-anchor", "middle").attr("alignment-baseline", "middle").style("font-family", "serif").style("font-style", "italic").style("fill", "#4a5568").style("font-size", "11px");
-        g.append("text").attr("x", -10).attr("y", bottomChartTop - 15).attr("fill", "#e53e3e").attr("text-anchor", "start").style("font-weight", "bold").text("Volatility (Z-Score)");
+        g.append("text").attr("x", -10).attr("y", bottomChartTop - 15).attr("fill", "#e53e3e").attr("text-anchor", "start").style("font-weight", "bold").text("Volatility (Z-Score)").style("font-size", "14px");
         
         g.append("rect").attr("x", -35).attr("y", bottomChartTop - 28).attr("width", 20).attr("height", 20).attr("fill", "transparent").style("cursor", "help")
           .on("mouseover", () => {
             infoTooltip.style("display", "block").html(`
               <strong>Volatility Z-Score (Red Line)</strong><br/>
-              <span style="color:#718096;">Measures the mathematical violence of price jumps using the log-returns of the last 10 trades. It ignores the clock and only tracks action.<br/><br/>
-              <strong>ARIMAX (Gray Dashed Line):</strong> The algorithmic pulse. It uses the raw US Dollar volume to predict if a shock is real institutional momentum or just fake "pin drop" noise.</span>
+              <span style="color:#718096;">Measures the volatility of price jumps using the log-returns of the last 10 trades. It ignores the clock and only tracks action.<br/><br/>
+              <strong>ARIMAX (Gray Dashed Line):</strong> Uses a pre-calculated ARIMAX coefficient to try and predict the true volatility of the market via autoregression.</span>
             `);
           })
           .on("mousemove", (event) => {
@@ -156,8 +196,8 @@ export default function DualAxisChart({ chartData }) {
     focusBot.append("line").attr("x1", margin.left).attr("x2", width - margin.right).attr("y1", yZScoreScale(1.96)).attr("y2", yZScoreScale(1.96)).attr("stroke", "#e53e3e").attr("stroke-dasharray", "4,4").attr("opacity", 0.5);
 
     focusTop.selectAll(".vol-bar").data(data).enter().append("rect").attr("class", "vol-bar")
-      .attr("x", d => xScale(d.idx) - 2).attr("y", d => yVolumeScale(d.yesVolume + d.noVolume)).attr("width", 4).attr("height", d => topChartBot - yVolumeScale(d.yesVolume + d.noVolume))
-      .attr("fill", d => d.yesVolume > d.noVolume ? "rgba(56, 161, 105, 0.3)" : d.noVolume > d.yesVolume ? "rgba(229, 62, 62, 0.3)" : "rgba(160, 174, 192, 0.3)");
+      .attr("x", d => xScale(d.idx) - 1).attr("y", d => yVolumeScale(d.yesVolume + d.noVolume)).attr("width", 2).attr("height", d => topChartBot - yVolumeScale(d.yesVolume + d.noVolume))
+      .attr("fill", d => d.yesVolume > d.noVolume ? "rgba(56, 161, 105, 0.4)" : d.noVolume > d.yesVolume ? "rgba(229, 62, 62, 0.4)" : "rgba(160, 174, 192, 0.4)");
     
     const priceLine = d3.line().x(d => xScale(d.idx)).y(d => yPriceScale(d.price)).curve(d3.curveMonotoneX);
     focusTop.append("path").datum(data).attr("class", "price-line").attr("fill", "none").attr("stroke", "#3182ce").attr("stroke-width", 3).attr("d", priceLine);
@@ -180,25 +220,42 @@ export default function DualAxisChart({ chartData }) {
       g.append("text").attr("x", 28).attr("y", 4).text(d.label).style("font-size", "11px").style("fill", "#4a5568").attr("alignment-baseline", "middle");
     });
 
-    // Bottom Legend
-    const bottomLegend = svg.append("g").attr("transform", `translate(${width - margin.right - 310}, ${bottomChartTop - 15})`);
+    const bottomLegend = svg.append("g").attr("transform", `translate(${width - margin.right - 350}, ${bottomChartTop - 15})`);
+    
     const bottomLegendData = [
-      { label: "Z-Score", type: "line", color: "#e53e3e" },
-      { label: "ARIMAX", type: "dashed", color: "rgba(74, 85, 104, 0.8)" },
-      { label: "Anomaly Zone", type: "rect", color: "rgba(229, 62, 62, 0.15)" }
+      { label: ["Measured Z-Score"], type: "line", color: "#e53e3e" },
+      { label: ["Predicted z-score", "using ARIMAX"], type: "dashed", color: "rgba(74, 85, 104, 0.8)" },
+      { label: ["Anomaly Zone"], type: "rect", color: "rgba(153, 27, 27, 0.25)" }
     ];
 
-    const bottomLegendItems = bottomLegend.selectAll(".legend-item").data(bottomLegendData).enter().append("g").attr("transform", (d, i) => `translate(${i * 90}, 0)`);
+    const bottomLegendItems = bottomLegend.selectAll(".legend-item").data(bottomLegendData).enter()
+      .append("g")
+      .attr("transform", (d, i) => `translate(${i * 130}, 0)`);
+
     bottomLegendItems.each(function(d) {
       const g = d3.select(this);
+      
       if (d.type === "line" || d.type === "dashed") {
-        g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 20).attr("y2", 0).attr("stroke", d.color).attr("stroke-width", 3).attr("stroke-dasharray", d.type === "dashed" ? "5,5" : "none");
+        g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 20).attr("y2", 0)
+         .attr("stroke", d.color).attr("stroke-width", 3)
+         .attr("stroke-dasharray", d.type === "dashed" ? "5,5" : "none");
       } else if (d.type === "rect") {
         g.append("rect").attr("x", 0).attr("y", -6).attr("width", 20).attr("height", 12).attr("fill", d.color);
       }
-      g.append("text").attr("x", 28).attr("y", 4).text(d.label).style("font-size", "11px").style("fill", "#4a5568").attr("alignment-baseline", "middle");
-    });
 
+      g.append("text")
+        .attr("x", 28)
+        .attr("y", d.label.length > 1 ? -4 : 4) 
+        .style("font-size", "11px")
+        .style("fill", "#4a5568")
+        .selectAll("tspan")
+        .data(d.label)
+        .enter()
+        .append("tspan")
+          .attr("x", 28)
+          .attr("dy", (line, index) => index === 0 ? 0 : "1.2em")
+          .text(line => line);
+    });
 
     const crosshair = svg.append("line").attr("class", "crosshair").style("display", "none")
       .attr("y1", margin.top).attr("y2", bottomChartBot).attr("stroke", "#a0aec0").attr("stroke-width", 1).attr("stroke-dasharray", "4,4");
@@ -240,7 +297,7 @@ export default function DualAxisChart({ chartData }) {
         const isLowLiquidity = (d.yesVolume + d.noVolume) < (maxVolume * 0.05) || d.tradeCount < 3; 
 
         tooltipText.selectAll("tspan").remove();
-        tooltipText.append("tspan").attr("x", 0).attr("dy", "0").text(`Price: ${(d.price * 100).toFixed(1)}%`);
+        tooltipText.append("tspan").attr("x", 0).attr("dy", "0").style("fill", "#3182ce").text(`Price: ${(d.price * 100).toFixed(1)}%`);
         
         tooltipText.append("tspan").attr("x", 0).attr("dy", "1.4em").style("fill", "#38a169").text(`Yes money vol: ${formatter.format(d.yesVolume)}`);
         tooltipText.append("tspan").attr("x", 0).attr("dy", "1.4em").style("fill", "#e53e3e").text(`No money vol: ${formatter.format(d.noVolume)}`);
@@ -272,7 +329,11 @@ export default function DualAxisChart({ chartData }) {
         xAxisGroupBot.call(xAxis.scale(newXScale));
         
         focusTop.select(".price-line").attr("d", priceLine.x(d => newXScale(d.idx)));
-        focusTop.selectAll(".vol-bar").attr("x", d => newXScale(d.idx) - 2).attr("width", Math.max(1, 4 * event.transform.k));
+        
+        focusTop.selectAll(".vol-bar")
+          .attr("x", d => newXScale(d.idx) - 1)
+          .attr("width", 2);
+
         focusBot.select(".zscore-line").attr("d", zScoreLine.x(d => newXScale(d.idx)));
         focusBot.select(".zscore-area").attr("d", zScoreArea.x(d => newXScale(d.idx)));
         focusBot.select(".arimax-line").attr("d", arimaxLine.x(d => newXScale(d.idx)));
@@ -290,13 +351,6 @@ export default function DualAxisChart({ chartData }) {
   }, [chartData, showAnomalies]);
 
   if (!chartData || !chartData.length) return <div style={{ height: '650px', textAlign: 'center', paddingTop: '300px' }}>Loading stream...</div>;
-  if (chartData.length < 2) return (
-    <div style={{ height: '650px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: '48px', marginBottom: '16px' }}>👻</div>
-      <h3 style={{ color: '#2d3748', margin: '0 0 8px 0' }}>Market Ghost Town</h3>
-      <p style={{ color: '#718096', margin: 0, fontSize: '14px' }}>This market only has {chartData.length} transaction recorded. We need at least 2 trades to visualize a timeline.</p>
-    </div>
-  );
 
   return (
     <div style={{ position: 'relative', width: '100%', background: 'white', borderRadius: '8px', padding: '10px 0' }}>
