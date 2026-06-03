@@ -37,13 +37,8 @@ const Card = ({ title, value, subtext, color = '#2b6cb0', explanation, setToolti
   </div>
 );
 
-export default function KPIGrid({ stats, currentLabel }) {
-  const [tooltip, setTooltip] = useState({
-    visible: false,
-    content: '',
-    x: 0,
-    y: 0
-  });
+export default function KPIGrid({ stats, currentLabel, certainty }) {
+  const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
 
   let arimaxVal = "0.002";
   let arimaxColor = "#718096";
@@ -63,9 +58,50 @@ export default function KPIGrid({ stats, currentLabel }) {
   const safeMaxZ = stats?.maxZ !== undefined ? `${stats.maxZ} σ` : "0 σ";
   const safeAnomaly = stats?.anomalyPct !== undefined ? stats.anomalyPct : "0%";
 
+  // TWAP-based certainty: a time-weighted confidence in [0, 1] where 1 = the
+  // market is fully decided and 0 = a coin-flip. Colour from red (uncertain) to
+  // green (decided).
+  const twapScore = certainty?.certainty_twap;
+  const hasTwap = twapScore !== undefined && twapScore !== null;
+  const safeTwap = hasTwap ? twapScore.toFixed(4) : "—";
+  let twapColor = "#a0aec0";
+  let twapText = "No certainty data";
+  if (hasTwap) {
+    if (twapScore >= 0.66) {
+      twapColor = "#38a169";
+      twapText = "Market is largely decided on the predictions";
+    } else if (twapScore >= 0.33) {
+      twapColor = "#dd6b20";
+      twapText = "Market is contested on the predictions";
+    } else {
+      twapColor = "#e53e3e";
+      twapText = "Near coin-flip on the predictions";
+    }
+  }
+
+  // VWAP-based certainty: a volume-weighted confidence in [0, 1], same scale as
+  // TWAP. Lives under metrics.certainty_vwap in the API response.
+  const vwapScore = certainty?.metrics?.certainty_vwap;
+  const hasVwap = vwapScore !== undefined && vwapScore !== null;
+  const safeVwap = hasVwap ? vwapScore.toFixed(4) : "—";
+  let vwapColor = "#a0aec0";
+  let vwapText = "No certainty data";
+  if (hasVwap) {
+    if (vwapScore >= 0.66) {
+      vwapColor = "#38a169";
+      vwapText = "Market is largely decided";
+    } else if (vwapScore >= 0.33) {
+      vwapColor = "#dd6b20";
+      vwapText = "Market is contested";
+    } else {
+      vwapColor = "#e53e3e";
+      vwapText = "Near coin-flip";
+    }
+  }
+
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '30px' }}>
         <Card 
           title="Transactions recorded" 
           value={safeTrades} 
@@ -96,6 +132,15 @@ export default function KPIGrid({ stats, currentLabel }) {
           subtext="Time Spent in Instability" 
           color="#fc8181" 
           explanation="The percentage of the market's lifespan spent in a hyper-volatile state (>1.96σ). Indicates a chaotic, news-driven timeline."
+          setTooltip={setTooltip}
+        />
+        <Card 
+          title="TWAP Certainty" 
+          value={safeTwap} 
+          subtext={twapText} 
+          color={twapColor} 
+          explanation="A time-weighted measure of market certainty score ranges from 0 to 1. High values indicate a market that has been largely decided for most of its life (majority YES or NO).
+           Low value indicates a market are undecided on the outcome during the trading period."
           setTooltip={setTooltip}
         />
       </div>

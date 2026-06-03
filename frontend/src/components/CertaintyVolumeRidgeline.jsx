@@ -138,7 +138,7 @@ export default function CertaintyVolumeRidgeline() {
     });
     svg.append('text').attr('transform', `translate(22,${margin.top + innerH / 2}) rotate(-90)`)
       .attr('text-anchor', 'middle').style('font-size', '12px').style('fill', '#718096')
-      .text('traded-volume band');
+      .text('Traded-volume band');
   }, [data]);
 
   if (error) return (
