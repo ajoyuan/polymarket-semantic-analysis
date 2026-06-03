@@ -130,8 +130,6 @@ export default function DashboardApp() {
           >
             Market Timeline
           </button>
-          
-
         </div>
 
         {activeTab === 'timeline' && (
@@ -180,7 +178,54 @@ export default function DashboardApp() {
               catalog={catalog} 
               selectedGenre={selectedGenre} 
               selectedCategory={selectedCategory} 
+              
+              onLinkClick={(clickedGenre, clickedCategory) => {
+                setSelectedGenre(clickedGenre);
+                setSelectedCategory(clickedCategory);
+              }}
+              
+              onNodeClick={(nodeName) => {
+                if (genres.includes(nodeName)) {
+                  setSelectedGenre(nodeName);
+                  setSelectedCategory('All'); 
+                } else if (categories.includes(nodeName)) {
+                  setSelectedCategory(nodeName);
+                  setSelectedGenre('All');    
+                }
+              }}
             />
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+              <button 
+                onClick={() => {
+                  setSelectedGenre('All');
+                  setSelectedCategory('All');
+                }}
+                style={{
+                  padding: '10px 24px', 
+                  background: 'white', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px', 
+                  color: '#e53e3e', 
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#fed7d7';
+                  e.target.style.borderColor = '#fc8181';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'white';
+                  e.target.style.borderColor = '#e2e8f0';
+                }}
+              >
+                Reset Filters
+              </button>
+            </div>
+
           </div>
         )}
 

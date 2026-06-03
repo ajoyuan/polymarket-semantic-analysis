@@ -72,8 +72,8 @@ export default function DualAxisChart({ chartData }) {
     const height = 650; 
     const margin = { top: 40, right: 60, bottom: 40, left: 60 };
 
-    const topChartBot = 300; 
-    const bottomChartTop = 360; 
+    const topChartBot = 280; 
+    const bottomChartTop = 380;
     const bottomChartBot = height - margin.bottom;
 
     const svg = d3.select(svgRef.current);
@@ -98,7 +98,6 @@ export default function DualAxisChart({ chartData }) {
     const focusTop = svg.append("g").attr("clip-path", "url(#clip-top)");
     const focusBot = svg.append("g").attr("clip-path", "url(#clip-bot)");
 
-    // FIX: Darker Anomaly Zone Color
     if (showAnomalies) {
       focusTop.selectAll(".anom-top").data(anomalyRegions).enter().append("rect").attr("class", "anom-top") 
         .attr("x", d => xScale(d.start)).attr("y", margin.top).attr("width", d => Math.max(2, xScale(d.end) - xScale(d.start))).attr("height", topChartBot - margin.top).attr("fill", "rgba(153, 27, 27, 0.15)");
@@ -112,11 +111,51 @@ export default function DualAxisChart({ chartData }) {
     const xAxisGroupTop = svg.append("g").attr("class", "x-axis").attr("transform", `translate(0,${topChartBot})`).call(xAxis).attr("color", "#a0aec0");
     const xAxisGroupBot = svg.append("g").attr("class", "x-axis").attr("transform", `translate(0,${bottomChartBot})`).call(xAxis).attr("color", "#a0aec0");
 
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - 40)
+      .attr("x", -(margin.top + (topChartBot - margin.top) / 2)) 
+      .style("text-anchor", "middle")
+      .style("fill", "#3182ce")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Probability Price (%)");
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", topChartBot + 35)
+      .style("text-anchor", "middle")
+      .style("fill", "#718096")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Timeline (Local Time)");
+
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - 40)
+      .attr("x", -(bottomChartTop + (bottomChartBot - bottomChartTop) / 2))
+      .style("text-anchor", "middle")
+      .style("fill", "#e53e3e")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Volatility (Z-Score)");
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", bottomChartBot + 35)
+      .style("text-anchor", "middle")
+      .style("fill", "#718096")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text("Timeline (Local Time)");
+
+
     svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yPriceScale).ticks(5)).attr("color", "#3182ce")
       .call(g => {
         g.append("circle").attr("cx", -25).attr("cy", margin.top - 19).attr("r", 7).attr("fill", "#edf2f7").attr("stroke", "#cbd5e0");
         g.append("text").attr("x", -25).attr("y", margin.top - 18).text("i").attr("text-anchor", "middle").attr("alignment-baseline", "middle").style("font-family", "serif").style("font-style", "italic").style("fill", "#4a5568").style("font-size", "11px");
-        g.append("text").attr("x", -10).attr("y", margin.top - 15).attr("fill", "#3182ce").attr("text-anchor", "start").style("font-weight", "bold").text("Probability Price");
+        g.append("text").attr("x", -10).attr("y", margin.top - 15).attr("fill", "#3182ce").attr("text-anchor", "start").style("font-weight", "bold").text("Probability Price").style("font-size", "14px");
         
         g.append("rect").attr("x", -35).attr("y", margin.top - 28).attr("width", 20).attr("height", 20).attr("fill", "transparent").style("cursor", "help")
           .on("mouseover", () => {
@@ -137,7 +176,7 @@ export default function DualAxisChart({ chartData }) {
       .call(g => {
         g.append("circle").attr("cx", -25).attr("cy", bottomChartTop - 19).attr("r", 7).attr("fill", "#edf2f7").attr("stroke", "#cbd5e0");
         g.append("text").attr("x", -25).attr("y", bottomChartTop - 18).text("i").attr("text-anchor", "middle").attr("alignment-baseline", "middle").style("font-family", "serif").style("font-style", "italic").style("fill", "#4a5568").style("font-size", "11px");
-        g.append("text").attr("x", -10).attr("y", bottomChartTop - 15).attr("fill", "#e53e3e").attr("text-anchor", "start").style("font-weight", "bold").text("Volatility (Z-Score)");
+        g.append("text").attr("x", -10).attr("y", bottomChartTop - 15).attr("fill", "#e53e3e").attr("text-anchor", "start").style("font-weight", "bold").text("Volatility (Z-Score)").style("font-size", "14px");
         
         g.append("rect").attr("x", -35).attr("y", bottomChartTop - 28).attr("width", 20).attr("height", 20).attr("fill", "transparent").style("cursor", "help")
           .on("mouseover", () => {
@@ -186,7 +225,7 @@ export default function DualAxisChart({ chartData }) {
     const bottomLegendData = [
       { label: ["Measured Z-Score"], type: "line", color: "#e53e3e" },
       { label: ["Predicted z-score", "using ARIMAX"], type: "dashed", color: "rgba(74, 85, 104, 0.8)" },
-      { label: ["Anomaly Zone"], type: "rect", color: "rgba(153, 27, 27, 0.25)" } // Matched darker red
+      { label: ["Anomaly Zone"], type: "rect", color: "rgba(153, 27, 27, 0.25)" }
     ];
 
     const bottomLegendItems = bottomLegend.selectAll(".legend-item").data(bottomLegendData).enter()
