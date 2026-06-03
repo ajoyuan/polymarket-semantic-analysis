@@ -29,8 +29,9 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
     const totalMarkets = catalog.length;
     const flowCounts = {};
     catalog.forEach(market => {
-      const source = market.category || 'Unknown';
-      const target = market.predicted_label || 'Unclassified';
+      let source = market.category ? market.category.charAt(0).toUpperCase() + market.category.slice(1) : 'Unknown';
+      let target = market.predicted_label ? market.predicted_label.charAt(0).toUpperCase() + market.predicted_label.slice(1) : 'Unclassified';
+      
       const key = `${source}|${target}`;
       flowCounts[key] = (flowCounts[key] || 0) + 1;
     });
@@ -91,8 +92,11 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
 
     const getLinkOpacity = (d) => {
       if (selectedGenre === 'All' && selectedCategory === 'All') return 0.35;
-      const matchesGenre = selectedGenre === 'All' || d.source.name === selectedGenre;
-      const matchesCategory = selectedCategory === 'All' || d.target.name === selectedCategory;
+      const formattedGenre = selectedGenre === 'All' ? 'All' : selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1);
+      const formattedCat = selectedCategory === 'All' ? 'All' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+      
+      const matchesGenre = formattedGenre === 'All' || d.source.name === formattedGenre;
+      const matchesCategory = formattedCat === 'All' || d.target.name === formattedCat;
       return (matchesGenre && matchesCategory) ? 0.8 : 0.05; 
     };
 
@@ -113,7 +117,6 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("cursor", "pointer") 
       .on("mouseover", function(event, d) { 
         d3.select(this).attr("stroke-opacity", 0.9);
-        
         const rawPercent = (d.realValue / totalMarkets) * 100;
         const displayPercent = rawPercent < 0.1 ? rawPercent.toFixed(3) : rawPercent.toFixed(1);
         
@@ -121,7 +124,6 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
           <strong>${d.source.name} → ${d.target.name}</strong><br/>
           <span style="color:#718096;">${d.realValue} Markets (${displayPercent}% of the collected markets)</span>
         `);
-
         const [x, y] = d3.pointer(event, svgRef.current.parentNode);
         tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
       })
@@ -151,8 +153,10 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .attr("width", d => d.x1 - d.x0)
       .attr("fill", d => getTargetColor(d.name))
       .attr("opacity", d => {
-        if (selectedGenre === 'All' && selectedCategory === 'All') return 0.9;
-        if (d.name === selectedGenre || d.name === selectedCategory) return 1.0;
+        const formattedGenre = selectedGenre === 'All' ? 'All' : selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1);
+        const formattedCat = selectedCategory === 'All' ? 'All' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+        if (formattedGenre === 'All' && formattedCat === 'All') return 0.9;
+        if (d.name === formattedGenre || d.name === formattedCat) return 1.0;
         return 0.3;
       })
       .style("transition", "opacity 0.4s ease")
@@ -174,7 +178,6 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
           <strong>${d.name}</strong><br/>
           <span style="color:#718096;">Total: ${actualTotal} Markets (${displayPercent}% of the collected markets)</span>
         `);
-
         const [x, y] = d3.pointer(event, svgRef.current.parentNode);
         tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
       })
@@ -201,8 +204,10 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("font-weight", "bold")
       .style("fill", "#2d3748")
       .style("opacity", d => {
-        if (selectedGenre === 'All' && selectedCategory === 'All') return 1.0;
-        if (d.name === selectedGenre || d.name === selectedCategory) return 1.0;
+        const formattedGenre = selectedGenre === 'All' ? 'All' : selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1);
+        const formattedCat = selectedCategory === 'All' ? 'All' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+        if (formattedGenre === 'All' && formattedCat === 'All') return 1.0;
+        if (d.name === formattedGenre || d.name === formattedCat) return 1.0;
         return 0.3;
       })
       .style("transition", "opacity 0.4s ease")

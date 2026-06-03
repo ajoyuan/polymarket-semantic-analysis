@@ -161,8 +161,9 @@ export default function DualAxisChart({ chartData }) {
           .on("mouseover", () => {
             infoTooltip.style("display", "block").html(`
               <strong>Probability Price (Blue Line)</strong><br/>
-              <span style="color:#718096;">The raw market consensus ranging from 0% to 100%. It represents the direct cost of a single contract.<br/><br/>
-              <strong>Volume (Green/Red Bars):</strong> The actual US Dollar amount traded during a specific interval.</span>
+              <span style="color:#718096;">The raw market consensus ranging from 0% to 100%. It represents the direct cost of a single contract.<br/><br/></span>
+              <strong>Volume (Green/Red Bars):</strong> <br/>
+              <span style="color:#718096;">The actual US Dollar amount traded during a specific interval.<br/></span>
             `);
           })
           .on("mousemove", (event) => {
@@ -182,8 +183,9 @@ export default function DualAxisChart({ chartData }) {
           .on("mouseover", () => {
             infoTooltip.style("display", "block").html(`
               <strong>Volatility Z-Score (Red Line)</strong><br/>
-              <span style="color:#718096;">Measures the volatility of price jumps using the log-returns of the last 10 trades. It ignores the clock and only tracks action.<br/><br/>
-              <strong>ARIMAX (Gray Dashed Line):</strong> Uses a pre-calculated ARIMAX coefficient to try and predict the true volatility of the market via autoregression.</span>
+              <span style="color:#718096;">Measures the volatility of price jumps using the log-returns of the last 10 trades. It ignores the clock and only tracks action.<br/><br/></span>
+              <strong>ARIMAX (Gray Dashed Line):</strong> <br/>
+              <span style="color:#718096;">Uses a pre-calculated ARIMAX coefficient to try and predict the true volatility of the market via autoregression.<br/></span>
             `);
           })
           .on("mousemove", (event) => {
@@ -219,26 +221,29 @@ export default function DualAxisChart({ chartData }) {
       g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 20).attr("y2", 0).attr("stroke", d.color).attr("stroke-width", 3);
       g.append("text").attr("x", 28).attr("y", 4).text(d.label).style("font-size", "11px").style("fill", "#4a5568").attr("alignment-baseline", "middle");
     });
-
-    const bottomLegend = svg.append("g").attr("transform", `translate(${width - margin.right - 350}, ${bottomChartTop - 15})`);
+    
+    const bottomLegend = svg.append("g").attr("transform", `translate(${width - margin.right - 580}, ${bottomChartTop - 15})`);
     
     const bottomLegendData = [
       { label: ["Measured Z-Score"], type: "line", color: "#e53e3e" },
       { label: ["Predicted z-score", "using ARIMAX"], type: "dashed", color: "rgba(74, 85, 104, 0.8)" },
+      { label: ["1.96σ Shock", "Threshold"], type: "dashed-threshold", color: "#e53e3e", opacity: 0.5 }, 
       { label: ["Anomaly Zone"], type: "rect", color: "rgba(153, 27, 27, 0.25)" }
     ];
 
     const bottomLegendItems = bottomLegend.selectAll(".legend-item").data(bottomLegendData).enter()
       .append("g")
-      .attr("transform", (d, i) => `translate(${i * 130}, 0)`);
+      .attr("transform", (d, i) => `translate(${i * 150}, 0)`);
 
     bottomLegendItems.each(function(d) {
       const g = d3.select(this);
       
-      if (d.type === "line" || d.type === "dashed") {
+      if (d.type === "line" || d.type.includes("dashed")) {
         g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 20).attr("y2", 0)
-         .attr("stroke", d.color).attr("stroke-width", 3)
-         .attr("stroke-dasharray", d.type === "dashed" ? "5,5" : "none");
+         .attr("stroke", d.color)
+         .attr("stroke-width", d.type === "dashed-threshold" ? 1.5 : 3)
+         .attr("stroke-dasharray", d.type === "dashed" ? "5,5" : d.type === "dashed-threshold" ? "4,4" : "none")
+         .attr("opacity", d.opacity || 1);
       } else if (d.type === "rect") {
         g.append("rect").attr("x", 0).attr("y", -6).attr("width", 20).attr("height", 12).attr("fill", d.color);
       }
