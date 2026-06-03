@@ -3,11 +3,13 @@ import DashboardHeader from './components/DashboardHeader';
 import KPIGrid from './components/KPIGrid';
 import DualAxisChart from './components/DualAxisChart';
 import SankeyChart from './components/SankeyChart';
+import CertaintyVolumeRidgeline from './components/CertaintyVolumeRidgeline';
 
 export default function DashboardApp() {
   const [catalog, setCatalog] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [uncertainty, setUncertainty] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState('macro');
@@ -51,7 +53,27 @@ export default function DashboardApp() {
     fetchTimeSeries();
   }, [selectedId]);
 
-  
+  useEffect(() => {
+    if (!selectedId) return;
+
+    const fetchUncertainty = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/dashboard/uncertainty?market_id=${selectedId}`);
+        if (!response.ok) {
+          setUncertainty(null);
+          return;
+        }
+        const data = await response.json();
+        setUncertainty(data);
+      } catch (error) {
+        console.error("Failed to load uncertainty:", error);
+        setUncertainty(null);
+      }
+    };
+    fetchUncertainty();
+  }, [selectedId]);
+
+
   const genres = ['All', ...new Set(catalog.map(m => m.category).filter(Boolean))];
   const categories = ['All', ...new Set(catalog.map(m => m.predicted_label).filter(Boolean))];
 
@@ -130,6 +152,13 @@ export default function DashboardApp() {
           >
             Market Timeline
           </button>
+
+          <button
+            onClick={() => setActiveTab('certainty')}
+            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'certainty' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'certainty' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
+          >
+            Certainty vs Volume
+          </button>
         </div>
 
         {activeTab === 'timeline' && (
@@ -139,7 +168,7 @@ export default function DashboardApp() {
               selectedId={selectedId} 
               onSelect={setSelectedId} 
             />
-            <KPIGrid stats={stats} currentLabel={currentLabel} />
+            <KPIGrid stats={stats} currentLabel={currentLabel} uncertainty={uncertainty} />
             
             {loading ? (
               <div style={{ height: '650px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0aec0' }}>
@@ -153,7 +182,6 @@ export default function DashboardApp() {
 
         {activeTab === 'macro' && (
           <div className="fade-in-animation">
-          
             <div style={{ 
               background: '#ebf8ff', 
               borderLeft: '4px solid #3182ce', 
@@ -226,6 +254,12 @@ export default function DashboardApp() {
               </button>
             </div>
 
+          </div>
+        )}
+
+        {activeTab === 'certainty' && (
+          <div className="fade-in-animation">
+            <CertaintyVolumeRidgeline />
           </div>
         )}
 
