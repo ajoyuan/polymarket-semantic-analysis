@@ -34,7 +34,6 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       
       let finalX = x + 15;
       
-      // If the tooltip plus a 20px buffer hits the right wall, flip it left!
       if (finalX + tooltipWidth + 20 > containerWidth) {
         finalX = x - tooltipWidth - 15;
       }
