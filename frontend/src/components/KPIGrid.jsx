@@ -42,25 +42,23 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
 
   let arimaxVal = "0.002";
   let arimaxColor = "#718096";
-  let arimaxText = "Trend is highly randomized";
+  let arimaxText = "The market moves randomly regardless of past data.";
 
   if (currentLabel === 'Decision-Agent') {
     arimaxVal = "0.1543";
     arimaxColor = "#e53e3e";
-    arimaxText = "Trend is highly speculative";
+    arimaxText = "Volatility is based mostly on previous market momentum.";
   } else if (currentLabel === 'Objective Outcome') {
     arimaxVal = "0.0836";
     arimaxColor = "#3182ce";
-    arimaxText = "Trend can be predicted";
+    arimaxText = "Volatility is anchored to predictable external events";
   }
 
   const safeTrades = stats?.totalTrades !== undefined ? stats.totalTrades.toLocaleString() : 0;
   const safeMaxZ = stats?.maxZ !== undefined ? `${stats.maxZ} σ` : "0 σ";
   const safeAnomaly = stats?.anomalyPct !== undefined ? stats.anomalyPct : "0%";
 
-  // TWAP-based certainty: a time-weighted confidence in [0, 1] where 1 = the
-  // market is fully decided and 0 = a coin-flip. Colour from red (uncertain) to
-  // green (decided).
+
   const twapScore = certainty?.uncertainty_twap;
   const hasTwap = twapScore !== undefined && twapScore !== null;
   const safeTwap = hasTwap ? twapScore.toFixed(4) : "—";
@@ -83,7 +81,7 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '30px' }}>
         <Card 
-          title="Transactions recorded" 
+          title="Total transactions" 
           value={safeTrades} 
           subtext="Total individual transactions" 
           color="#a0aec0" 
@@ -95,7 +93,7 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
           value={arimaxVal} 
           subtext={arimaxText} 
           color={arimaxColor} 
-          explanation="The baseline predictive momentum mathematically calculated for this specific market category."
+          explanation="The baseline predictive momentum mathematically calculated for this specific sematic category."
           setTooltip={setTooltip}
         />
         <Card 
@@ -111,7 +109,7 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
           value={safeAnomaly} 
           subtext="Time Spent in Instability" 
           color="#fc8181" 
-          explanation="The percentage of the market's lifespan spent in a hyper-volatile state (>1.96σ). Indicates a chaotic, news-driven timeline."
+          explanation="The percentage of the market's lifespan spent in a hyper-volatile state (Z-score >1.96σ)."
           setTooltip={setTooltip}
         />
         <Card 
