@@ -28,7 +28,7 @@ This project has three parts:
    [Vite](https://vitejs.dev/) single-page app that visualizes the API data with
    [D3](https://d3js.org/): a Sankey flow of market category → predicted type, a KPI grid
    (transactions, ARIMAX impact, max z-score, lifespan anomaly, TWAP certainty), a dual-axis
-   price/z-score time series, and a certainty-vs-volume ridgeline plot.
+   price/z-score time series, a certainty-vs-volume ridgeline plot, and a volitility distribution box plot.
 
 The dashboard reads from the API at `http://localhost:8000`. The API reads from local
 Parquet files in `backend-api/data/`. The ML pipeline (`backend/`) is what *generates* those
@@ -173,5 +173,5 @@ so the API serves the new data.
 └── frontend/           # React + Vite + D3 dashboard
     └── src/
         ├── App.jsx
-        └── components/ # KPIGrid, SankeyChart, DualAxisChart, CertaintyVolumeRidgeline, DashboardHeader
+        └── components/ # KPIGrid, SankeyChart, DualAxisChart, CertaintyVolumeRidgeline, BoxPlotChart, DashboardHeader
 ```
