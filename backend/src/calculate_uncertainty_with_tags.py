@@ -23,16 +23,8 @@ WITH eligible AS (
         predicted_label,
         event_tags_json
     FROM read_parquet($classified)
-    -- Eligibility is "has matching trades", not the metadata `volume`: that column
-    -- is Polymarket's market-metadata field, not computed from trades.parquet, and
-    -- is 0/stale for plenty of markets that actually traded (e.g. market 1549770
-    -- has volume=0 in metadata but 850 real trades). We therefore do NOT filter on
-    -- volume here; the inner join to `agg` at the bottom drops any market with no
-    -- matching trades. Only the shard predicate stays.
     WHERE hash(CAST(id AS BIGINT)) % $num_batches = $batch
 ),
--- Normalise to P(token1) and keep only eligible-market trades, joining on the
--- integer key, before the window touches the data.
 norm AS (
     SELECT
         TRY_CAST(t.market_id AS BIGINT) AS market_id,
@@ -59,8 +51,6 @@ trades AS (
 agg AS (
     SELECT
         market_id,
-        -- Trade-derived volume: total USD traded across both tokens for this market.
-        -- Replaces the unreliable metadata `volume` field from the markets file.
         sum(usd_amount) AS volume,
         arg_max(p, (timestamp, block_number, log_index)) AS last_price,
         CASE WHEN sum(usd_amount) = 0 THEN NULL

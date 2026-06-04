@@ -56,7 +56,6 @@ def _sleep_for_429(response: requests.Response, attempt: int) -> None:
 
 def build_session() -> requests.Session:
     s = requests.Session()
-    # Do not auto-retry 429 here — urllib3 gives up quickly; we handle 429 in fetch_tags_for_event.
     retries = Retry(
         total=5,
         backoff_factor=0.75,

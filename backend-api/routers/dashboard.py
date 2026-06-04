@@ -127,8 +127,7 @@ def get_certainty_volume_ridgeline(
 ):
     """
     Ridgeline data: the distribution of certainty (TWAP) within each traded-volume
-    band, per market type. The KDE is done here (the frontend only draws the curves),
-    so the response is a set of ready-to-plot density arrays sharing one x-grid.
+    band, per market type. Calculated using Gaussian KDE.
 
     Shape:
         {

@@ -80,6 +80,8 @@ export default function CertaintyVolumeRidgeline({ data, error }) {
 
         const cell = cellMap.get(`${type}|${band.label}`);
         const n = cell ? cell.n : 0;
+        const typeTotal = totalByType.get(type) || 0;
+        const pct = typeTotal > 0 ? (n / typeTotal) * 100 : 0;
 
         if (cell && cell.density) {
           const pts = cell.density.map((d, k) => ({
@@ -95,7 +97,7 @@ export default function CertaintyVolumeRidgeline({ data, error }) {
             .on('mousemove', (event) => {
               const [mx, my] = d3.pointer(event, svgRef.current.parentNode);
               tip.style('display', 'block').style('left', `${mx + 14}px`).style('top', `${my + 14}px`)
-                .html(`<strong style="color:${COLORS[type]}">${type}</strong><br/>volume ${band.label}<br/>n = ${n.toLocaleString()} markets`);
+                .html(`<strong style="color:${COLORS[type]}">${type}</strong><br/>volume ${band.label}<br/>${pct.toFixed(3)}% of ${type} markets <br/>n = ${n.toLocaleString()} markets`);
             })
             .on('mouseout', () => tip.style('display', 'none'));
           svg.append('path').datum(pts).attr('d', line)
@@ -104,7 +106,7 @@ export default function CertaintyVolumeRidgeline({ data, error }) {
 
         svg.append('text').attr('x', x0 + colW - 4).attr('y', base - rowH * 0.18)
           .attr('text-anchor', 'end').style('font-size', '10px').style('fill', '#4a4f55')
-          .text(`n=${n.toLocaleString()}`);
+          .text(n > 0 ? `${pct.toFixed(3)}%` : '');
       });
 
       svg.append('g').attr('transform', `translate(0,${margin.top + innerH})`)
