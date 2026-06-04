@@ -100,7 +100,7 @@ export default function DashboardApp() {
     return () => { cancelled = true; };
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchBoxPlot = async () => {
       try {
         const response = await fetch("http://localhost:8000/api/dashboard/box_plot");
@@ -215,29 +215,10 @@ useEffect(() => {
         {activeTab === 'timeline' && (
           <div className="fade-in-animation">
             
-            <div style={{ 
-              background: '#ebf8ff', 
-              borderLeft: '4px solid #3182ce', 
-              padding: '20px 25px', 
-              borderRadius: '8px', 
-              marginBottom: '25px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}>
-              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
-                Market Timeline Analysis
-              </h2>
-              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
-                Select an individual market from your filtered catalog below to visualize its real-time trading volume, probability price, and mathematical volatility.
-              </p>
-              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
-                <strong>How to use this page:</strong> Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, the z-score of its price volatility overtime, and highlight times where anomalies occured. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals).
-              </p>
-            </div>
-
             <ChartHeader
               title="Market Timeline Analysis"
               description="Select an individual market from your filtered catalog below to visualize its real-time trading volume, probability price, and mathematical volatility."
-              howTo="Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, highlighting any chaotic, news-driven anomalies. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals)."
+              howTo="Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, the z-score of the market's price volatility, predicted-zscore based on ARIMAX, and highlight anomalies. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals)."
             />
 
             <DashboardHeader
@@ -259,25 +240,17 @@ useEffect(() => {
 
         {activeTab === 'macro' && (
           <div className="fade-in-animation">
-            <div style={{ 
-              background: '#ebf8ff', 
-              borderLeft: '4px solid #3182ce', 
-              padding: '20px 25px', 
-              borderRadius: '8px', 
-              marginBottom: '25px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}>
-              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
-                Welcome to the Polymarket Analytics Platform
-              </h2>
-              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
-                This platform tracks, analyzes, and categorizes <strong>{catalog.length.toLocaleString()}</strong> prediction markets. 
-                The flow chart below illustrates how these markets are distributed across real-world genres (like Politics or Crypto) and their semantic categories (like Stochastic or Objective Outcome).
-              </p>
-              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
-                <strong>How to use this page:</strong> Use the dropdown filters above to isolate specific sectors. Hover over the thick colored blocks to see exact market counts and percentages, or trace the paths to see how the categories connect!
-              </p>
-            </div>
+            
+            <ChartHeader 
+              title="Welcome to the Polymarket Analytics Platform"
+              description={
+                <>
+                  This platform tracks, analyzes, and categorizes <strong>{catalog.length.toLocaleString()}</strong> prediction markets. 
+                  The flow chart below illustrates how these markets are distributed across real-world genres (like Politics or Crypto) and their semantic categories (like Stochastic or Objective Outcome).
+                </>
+              }
+              howTo="Use the dropdown filters above to isolate specific sectors. Hover over the thick colored blocks to see exact market counts and percentages, or trace the paths to see how the categories connect! You can also click on the paths to isolate and filter specific categories and types. Hit the reset button at the bottom reset the filters."
+            />
 
             <SankeyChart
               catalog={catalog} 
@@ -352,7 +325,7 @@ useEffect(() => {
             <ChartHeader
               title="Volatility Distribution"
               description="This chart compares the distribution of the maximum volatility across the three categories."
-              howTo="How to use this page: Hover over the boxes to see detailed statistical distributions. Hover over individual dots to investigate specific market anomalies."
+              howTo="Hover over the boxes to see detailed statistical distributions. Hover over individual dots to investigate specific market anomalies."
             />
             <BoxPlotChart data={boxPlotData?.data} types={boxPlotData?.types} />
           </div>
