@@ -24,7 +24,23 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("line-height", "1.5")
       .style("color", "#2d3748")
       .style("pointer-events", "none") 
+      .style("white-space", "nowrap")
       .style("z-index", 100);
+
+    const positionTooltip = (event) => {
+      const [x, y] = d3.pointer(event, svgRef.current.parentNode);
+      const containerWidth = svgRef.current.parentNode.clientWidth;
+      const tooltipWidth = tooltip.node().offsetWidth; 
+      
+      let finalX = x + 15;
+      
+      // If the tooltip plus a 20px buffer hits the right wall, flip it left!
+      if (finalX + tooltipWidth + 20 > containerWidth) {
+        finalX = x - tooltipWidth - 15;
+      }
+      
+      tooltip.style("left", finalX + "px").style("top", (y + 15) + "px");
+    };
 
     const totalMarkets = catalog.length;
     const flowCounts = {};
@@ -124,12 +140,10 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
           <strong>${d.source.name} → ${d.target.name}</strong><br/>
           <span style="color:#718096;">${d.realValue} Markets (${displayPercent}% of the collected markets)</span>
         `);
-        const [x, y] = d3.pointer(event, svgRef.current.parentNode);
-        tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
+        positionTooltip(event);
       })
       .on("mousemove", function(event) {
-        const [x, y] = d3.pointer(event, svgRef.current.parentNode);
-        tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
+        positionTooltip(event);
       })
       .on("mouseout", function(event, d) { 
         d3.select(this).attr("stroke-opacity", getLinkOpacity(d)); 
@@ -178,12 +192,10 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
           <strong>${d.name}</strong><br/>
           <span style="color:#718096;">Total: ${actualTotal} Markets (${displayPercent}% of the collected markets)</span>
         `);
-        const [x, y] = d3.pointer(event, svgRef.current.parentNode);
-        tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
+        positionTooltip(event);
       })
       .on("mousemove", function(event) {
-        const [x, y] = d3.pointer(event, svgRef.current.parentNode);
-        tooltip.style("left", (x + 15) + "px").style("top", (y + 15) + "px");
+        positionTooltip(event);
       })
       .on("mouseout", function() {
         tooltip.style("display", "none");
