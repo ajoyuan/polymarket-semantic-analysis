@@ -89,26 +89,6 @@ export default function BoxPlotChart({ data, types }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      
-      <div style={{ 
-        background: '#ebf8ff', 
-        borderLeft: '4px solid #3182ce', 
-        padding: '20px 25px', 
-        borderRadius: '8px', 
-        marginBottom: '25px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-      }}>
-        <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
-          Volatility Distribution
-        </h2>
-        <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
-          This chart compares the distribution of the maximum volatility across the three categories.
-        </p>
-        <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
-          <strong>How to use this page:</strong> Hover over the boxes to see detailed statistical distributions. Hover over individual dots to investigate specific market anomalies.
-        </p>
-      </div>
-
       <div style={{ 
         background: 'white', 
         padding: '20px', 

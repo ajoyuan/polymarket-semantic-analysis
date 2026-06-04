@@ -5,6 +5,7 @@ import DualAxisChart from './components/DualAxisChart';
 import SankeyChart from './components/SankeyChart';
 import CertaintyVolumeRidgeline from './components/CertaintyVolumeRidgeline';
 import BoxPlotChart from './components/BoxPlotChart';
+import ChartHeader from './components/ChartHeader';
 
 export default function DashboardApp() {
   const [catalog, setCatalog] = useState([]);
@@ -159,21 +160,23 @@ useEffect(() => {
   const currentMeta = catalog.find(m => m.id === selectedId);
   const currentLabel = currentMeta ? currentMeta.predicted_label : '';
 
+  const filtersDisabled = activeTab === 'certainty' || activeTab === 'volatility';
+
   return (
     <div style={{ padding: '40px', background: '#f4f6f9', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 25px rgba(0,0,0,0.06)' }}>
         
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', padding: '15px', background: '#edf2f7', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: activeTab === 'certainty' ? 0.5 : 1 }}>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', padding: '15px', background: '#edf2f7', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: filtersDisabled ? 0.5 : 1 }}>
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Genre:</label>
-            <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} disabled={activeTab === 'certainty'} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: activeTab === 'certainty' ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
+            <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)} disabled={filtersDisabled} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: filtersDisabled ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
               {genres.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
-          
+
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4a5568', textTransform: 'uppercase', marginBottom: '5px' }}>Filter by Model Type:</label>
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} disabled={activeTab === 'certainty'} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: activeTab === 'certainty' ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} disabled={filtersDisabled} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', background: 'white', cursor: filtersDisabled ? 'not-allowed' : 'pointer', minWidth: '150px' }}>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
@@ -211,27 +214,14 @@ useEffect(() => {
 
         {activeTab === 'timeline' && (
           <div className="fade-in-animation">
-            
-            <div style={{ 
-              background: '#ebf8ff', 
-              borderLeft: '4px solid #3182ce', 
-              padding: '20px 25px', 
-              borderRadius: '8px', 
-              marginBottom: '25px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}>
-              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
-                Market Timeline Analysis
-              </h2>
-              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
-                Select an individual market from your filtered catalog below to visualize its real-time trading volume, probability price, and mathematical volatility.
-              </p>
-              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
-                <strong>How to use this page:</strong> Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, highlighting any chaotic, news-driven anomalies. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals).
-              </p>
-            </div>
 
-            <DashboardHeader 
+            <ChartHeader
+              title="Market Timeline Analysis"
+              description="Select an individual market from your filtered catalog below to visualize its real-time trading volume, probability price, and mathematical volatility."
+              howTo="Use the dropdown or search to find a specific market. The chart will automatically plot its historical data, highlighting any chaotic, news-driven anomalies. Hover over the chart to see the probability, the volume of yes/no money, the number of yes/no transactions, z-score, and market health (marked at 30 minute intervals)."
+            />
+
+            <DashboardHeader
               catalog={filteredCatalog} 
               selectedId={selectedId} 
               onSelect={setSelectedId} 
@@ -250,27 +240,13 @@ useEffect(() => {
 
         {activeTab === 'macro' && (
           <div className="fade-in-animation">
-            <div style={{ 
-              background: '#ebf8ff', 
-              borderLeft: '4px solid #3182ce', 
-              padding: '20px 25px', 
-              borderRadius: '8px', 
-              marginBottom: '25px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}>
-              <h2 style={{ margin: '0 0 10px 0', color: '#2b6cb0', fontSize: '20px' }}>
-                Welcome to the Polymarket Analytics Platform
-              </h2>
-              <p style={{ margin: '0 0 10px 0', color: '#2d3748', fontSize: '15px', lineHeight: '1.6' }}>
-                This platform tracks, analyzes, and categorizes <strong>{catalog.length.toLocaleString()}</strong> prediction markets. 
-                The flow chart below illustrates how these markets are distributed across real-world genres (like Politics or Crypto) and their underlying mathematical models (like Stochastic or Objective Outcome).
-              </p>
-              <p style={{ margin: 0, color: '#4a5568', fontSize: '14px', fontStyle: 'italic' }}>
-                <strong>How to use this page:</strong> Use the dropdown filters above to isolate specific sectors. Hover over the thick colored blocks to see exact market counts, or trace the paths to see how the categories connect!
-              </p>
-            </div>
+            <ChartHeader
+              title="Welcome to the Polymarket Analytics Platform"
+              description={<>This platform tracks, analyzes, and categorizes <strong>{catalog.length.toLocaleString()}</strong> prediction markets. The flow chart below illustrates how these markets are distributed across real-world genres (like Politics or Crypto) and their underlying mathematical models (like Stochastic or Objective Outcome).</>}
+              howTo="Use the dropdown filters above to isolate specific sectors. Hover over the thick colored blocks to see exact market counts, or trace the paths to see how the categories connect!"
+            />
 
-            <SankeyChart 
+            <SankeyChart
               catalog={catalog} 
               selectedGenre={selectedGenre} 
               selectedCategory={selectedCategory} 
@@ -329,12 +305,22 @@ useEffect(() => {
 
         {activeTab === 'certainty' && (
           <div className="fade-in-animation">
+            <ChartHeader
+              title="Certainty vs Volume Ridgeline"
+              description="This ridgeline plot visualizes the distribution of market certainty (whether a market overwhelmingly bet on one outcome) against trading volume across all markets. Each ridge represents a different volume bucket, allowing you to see how certainty varies with market activity."
+              howTo="Hover over each ridge to see the exact certainty distribution for that volume bucket. Look for patterns such as whether higher volume markets tend to have more certainty (indicating strong consensus) or if lower volume markets show more uncertainty (lower consensus)."
+            />
             <CertaintyVolumeRidgeline data={ridgeline} error={ridgelineError} />
           </div>
         )}
 
         {activeTab === 'volatility' && (
           <div className="fade-in-animation">
+            <ChartHeader
+              title="Volatility Distribution"
+              description="This chart compares the distribution of the maximum volatility across the three categories."
+              howTo="How to use this page: Hover over the boxes to see detailed statistical distributions. Hover over individual dots to investigate specific market anomalies."
+            />
             <BoxPlotChart data={boxPlotData?.data} types={boxPlotData?.types} />
           </div>
         )}
