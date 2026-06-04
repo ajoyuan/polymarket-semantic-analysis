@@ -15,10 +15,14 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const searchResults = catalog
-    .filter(market => market.question.toLowerCase().includes(searchTerm.toLowerCase()))
-    .slice(0, 50);
+  const filteredCatalog = catalog.filter(market => {
+    const term = searchTerm.toLowerCase();
+    const matchesQuestion = market.question?.toLowerCase().includes(term);
+    const matchesId = market.id?.toString().toLowerCase().includes(term);
+    return matchesQuestion || matchesId;
+  });
 
+  const searchResults = filteredCatalog.slice(0, 50);
   const selectedMarket = catalog.find(m => m.id === selectedId);
 
   return (
@@ -35,8 +39,8 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
         
         <input 
           type="text"
-          placeholder={catalog.length === 0 ? "Loading Pipeline..." : "Type to search..."}
-          value={isOpen ? searchTerm : (selectedMarket ? `[${selectedMarket.predicted_label}] ${selectedMarket.question}` : '')}
+          placeholder={catalog.length === 0 ? "Loading Pipeline..." : "Type to search by name or Market ID..."}
+          value={isOpen ? searchTerm : (selectedMarket ? selectedMarket.question : '')}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setIsOpen(true);
@@ -77,14 +81,15 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
                 onMouseLeave={(e) => e.currentTarget.style.background = selectedId === market.id ? '#ebf8ff' : 'white'}
               >
                 <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>{market.question}</div>
-                <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: '#718096' }}>
+                <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: '#718096', alignItems: 'center' }}>
                   <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>{market.category}</span>
                   <span style={{ background: '#fed7d7', color: '#c53030', padding: '2px 6px', borderRadius: '4px' }}>{market.predicted_label}</span>
+                  <span style={{ color: '#a0aec0', marginLeft: 'auto', fontFamily: 'monospace' }}>ID: {market.id}</span>
                 </div>
               </div>
             ))}
             
-            {catalog.filter(m => m.question.toLowerCase().includes(searchTerm.toLowerCase())).length > 50 && (
+            {filteredCatalog.length > 50 && (
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#a0aec0', fontStyle: 'italic', background: '#f7fafc' }}>
                 Showing top 50 results. Keep typing to narrow it down...
               </div>
