@@ -31,7 +31,7 @@ This project has three parts:
    price/z-score time series, and a certainty-vs-volume ridgeline plot.
 
 The dashboard reads from the API at `http://localhost:8000`. The API reads from local
-Parquet files in `backend-api/data/`. The ML pipeline (`backend/`) is what *generates* those
+Parquet files in `backend-api/data/`. The Daata pipeline (`backend/`) is what *generates* those
 Parquet files; you only need to run it if you want to regenerate the data from scratch — the
 prebuilt Parquet files are already checked in under `backend-api/data/`.
 
@@ -53,7 +53,7 @@ Some endpoints additionally stream from the **remote** Hugging Face dataset
 `SII-WANGZJ/Polymarket_data` over HTTP (configured in `backend-api/db.py` — `quant.parquet`,
 `users.parquet`, etc.), so the API host needs internet access for those routes.
 
-### ML pipeline (`backend/`) — only needed to regenerate data
+### Data pipeline (`backend/`) — only needed to regenerate data
 
 | Input | Notes |
 |-------|-------|
@@ -65,12 +65,6 @@ Pipeline outputs land in `backend/data/` (e.g. `markets_classified.parquet`,
 `market_uncertainty.parquet`) and `backend/results/` (plots + summaries). To serve them,
 copy the relevant outputs into `backend-api/data/`.
 
-### Frontend (`frontend/`) — no local data files
-
-The frontend has **no** local data files. All data is fetched at runtime from the API at
-`http://localhost:8000`. The only requirement is that the backend API is running and
-reachable.
-
 ## Installation
 
 ### Prerequisites
@@ -81,8 +75,10 @@ reachable.
 
 ### 1. Backend API
 
+Dependencies for both the API and the Data pipeline live in a single `requirements.txt`
+at the project root.
+
 ```bash
-cd backend-api
 python -m venv .venv && source .venv/bin/activate    # optional but recommended
 pip install -r requirements.txt
 ```
@@ -97,17 +93,6 @@ npm install
 ```
 
 Key dependencies: React 19, Vite 6, d3 / d3-sankey, tailwindcss.
-
-### 3. ML pipeline (optional — only to regenerate data)
-
-The pipeline scripts in `backend/src/` use additional libraries not in the API's
-`requirements.txt`:
-
-```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate    # optional but recommended
-pip install -r requirements.txt
-```
 
 ## Development
 
@@ -151,6 +136,7 @@ python train.py                          # train roberta-large classifier -> bac
 python classify_markets.py                # label every market -> markets_classified.parquet
 python fetch_event_tags.py                # enrich with Gamma event tags
 python calculate_uncertainty_with_tags.py # compute certainty scores -> market_uncertainty.parquet
+python process_zscore_and_volatility.py   # compute z-score and volatility time series -> dashboard_timeseries.parquet, dashboard_catalog.parquet
 ```
 
 After regenerating, copy the relevant outputs from `backend/data/` into `backend-api/data/`
