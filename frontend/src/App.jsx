@@ -160,7 +160,7 @@ export default function DashboardApp() {
   const currentMeta = catalog.find(m => m.id === selectedId);
   const currentLabel = currentMeta ? currentMeta.predicted_label : '';
 
-  const filtersDisabled = activeTab === 'certainty' || activeTab === 'volatility';
+  const filtersDisabled = activeTab === 'certainty';
 
   return (
     <div style={{ padding: '40px', background: '#f4f6f9', minHeight: '100vh', fontFamily: '-apple-system, sans-serif' }}>
@@ -324,10 +324,10 @@ export default function DashboardApp() {
           <div className="fade-in-animation">
             <ChartHeader
               title="Volatility Distribution"
-              description="This chart compares the distribution of the maximum volatility across the three categories."
-              howTo="Hover over the boxes to see detailed statistical distributions. Hover over individual dots to investigate specific market anomalies."
+              description="This chart compares the distribution of the maximum volatility across different semantic categories."
+              howTo="Hover over the boxes to see detailed statistics."
             />
-            <BoxPlotChart data={boxPlotData?.data} types={boxPlotData?.types} />
+            <BoxPlotChart data={boxPlotData?.data} types={boxPlotData?.types} selectedGenre={selectedGenre} selectedCategory={selectedCategory}/>
           </div>
         )}
 

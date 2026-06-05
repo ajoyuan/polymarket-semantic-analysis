@@ -213,9 +213,11 @@ def get_box_plot_data(
             SELECT 
                 t.market_id,
                 MAX(t.zscore) AS local_peak_shock,
-                c.predicted_label
+                c.predicted_label,
+                ANY_VALUE(c.question) AS question,
+                ANY_VALUE(c.category) AS category
             FROM read_parquet('{DATA_SOURCES["dashboard_timeseries"]}') AS t
-            JOIN read_parquet('{DATA_SOURCES["markets_classified_with_event_tags"]}') AS c 
+            JOIN read_parquet('{DATA_SOURCES["dashboard_catalog"]}') AS c 
             ON t.market_id = c.id
             GROUP BY 
                 t.market_id, 
