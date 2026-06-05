@@ -4,7 +4,6 @@ import KPIGrid from './components/KPIGrid';
 import DualAxisChart from './components/DualAxisChart';
 import SankeyChart from './components/SankeyChart';
 import CertaintyVolumeRidgeline from './components/CertaintyVolumeRidgeline';
-import BoxPlotChart from './components/BoxPlotChart';
 import ChartHeader from './components/ChartHeader';
 
 export default function DashboardApp() {
@@ -16,8 +15,6 @@ export default function DashboardApp() {
 
   const [ridgeline, setRidgeline] = useState(null);
   const [ridgelineError, setRidgelineError] = useState(null);
-
-  const [boxPlotData, setBoxPlotData] = useState(null);
 
   const [activeTab, setActiveTab] = useState('macro');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -98,21 +95,6 @@ export default function DashboardApp() {
     };
     fetchRidgeline();
     return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    const fetchBoxPlot = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/api/dashboard/box_plot");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-
-        setBoxPlotData(data);
-      } catch (error) {
-        console.error("Failed to load box plot data:", error);
-      }
-    };
-    fetchBoxPlot();
   }, []);
 
 
@@ -202,13 +184,6 @@ export default function DashboardApp() {
             style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'certainty' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'certainty' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
           >
             Certainty vs Volume
-          </button>
-
-          <button
-            onClick={() => setActiveTab('volatility')}
-            style={{ padding: '10px 5px', background: 'none', border: 'none', borderBottom: activeTab === 'volatility' ? '3px solid #3182ce' : '3px solid transparent', color: activeTab === 'volatility' ? '#2b6cb0' : '#a0aec0', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', transition: 'all 0.2s' }}
-          >
-            Volatility Distribution
           </button>
         </div>
 
@@ -319,18 +294,6 @@ export default function DashboardApp() {
             <CertaintyVolumeRidgeline data={ridgeline} error={ridgelineError} />
           </div>
         )}
-
-        {activeTab === 'volatility' && (
-          <div className="fade-in-animation">
-            <ChartHeader
-              title="Volatility Distribution"
-              description="This chart compares the distribution of the maximum volatility across different semantic categories."
-              howTo="Hover over the boxes to see detailed statistics."
-            />
-            <BoxPlotChart data={boxPlotData?.data} types={boxPlotData?.types} selectedGenre={selectedGenre} selectedCategory={selectedCategory}/>
-          </div>
-        )}
-
       </div>
     </div>
   );
