@@ -199,34 +199,3 @@ def get_certainty_volume_ridgeline(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-
-@router.get("/box_plot")
-def get_box_plot_data(
-    con: duckdb.DuckDBPyConnection = Depends(get_db)
-):
-    """
-    Retrieve box plot data for each market, including market id, max z-scores, and predicted label.
-    """
-    try:
-        df = con.execute(f"""
-            SELECT 
-                t.market_id,
-                MAX(t.zscore) AS local_peak_shock,
-                c.predicted_label,
-                ANY_VALUE(c.question) AS question,
-                ANY_VALUE(c.category) AS category
-            FROM read_parquet('{DATA_SOURCES["dashboard_timeseries"]}') AS t
-            JOIN read_parquet('{DATA_SOURCES["dashboard_catalog"]}') AS c 
-            ON t.market_id = c.id
-            GROUP BY 
-                t.market_id, 
-                c.predicted_label;
-        """).df()
-
-        return {
-            "types": df["predicted_label"].unique().tolist(),
-            "data": df.to_dict(orient="records")
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
