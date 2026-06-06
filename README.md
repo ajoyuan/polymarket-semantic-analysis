@@ -35,9 +35,16 @@ Parquet files in `backend-api/data/`. The Daata pipeline (`backend/`) is what *g
 Parquet files; you only need to run it if you want to regenerate the data from scratch — the
 prebuilt Parquet files are already checked in under `backend-api/data/`.
 
-## Data
 
-### Backend API (`backend-api/`) — required to serve the dashboard
+## Installation
+
+### Prerequisites
+
+- **Python 3.10+** (the pipeline uses `transformers` / `torch`; a GPU is recommended for
+  training but not required for serving)
+- **Node.js 18+** and npm
+
+### Backend API Data (`backend-api/`) — required to serve the dashboard
 
 These local Parquet files must exist in `backend-api/data/` (~1.1 GB total):
 
@@ -47,31 +54,6 @@ These local Parquet files must exist in `backend-api/data/` (~1.1 GB total):
 | `dashboard_timeseries.parquet` | ~703 MB | `/api/dashboard/timeseries` | Per-market price / z-score time series |
 | `market_uncertainty.parquet` | ~88 MB | `/api/dashboard/uncertainty`, `/certainty_volume_ridgeline` | TWAP/VWAP/last-price certainty scores per market |
 | `markets_classified_with_event_tags.parquet` | ~342 MB | `/api/markets/*` | Classified markets enriched with event tags |
-
-
-Some endpoints additionally stream from the **remote** Hugging Face dataset
-`SII-WANGZJ/Polymarket_data` over HTTP (configured in `backend-api/db.py` — `quant.parquet`,
-`users.parquet`, etc.), so the API host needs internet access for those routes.
-
-### Data pipeline (`backend/`) — only needed to regenerate data
-
-| Input | Notes |
-|-------|-------|
-| `SII-WANGZJ/Polymarket_data` (Hugging Face) | Raw markets, trades, quant, and users Parquet files — downloaded automatically by the scripts |
-| `backend/data/polymarket_dataset.csv` | Labeled CSV used to train the classifier (`train.py`) |
-| Polymarket Gamma API (`gamma-api.polymarket.com`) | Live source for event tags (`fetch_event_tags.py`) |
-
-Pipeline outputs land in `backend/data/` (e.g. `markets_classified.parquet`,
-`market_uncertainty.parquet`) and `backend/results/` (plots + summaries). To serve them,
-copy the relevant outputs into `backend-api/data/`.
-
-## Installation
-
-### Prerequisites
-
-- **Python 3.10+** (the pipeline uses `transformers` / `torch`; a GPU is recommended for
-  training but not required for serving)
-- **Node.js 18+** and npm
 
 ### 1. Backend API
 
@@ -125,7 +107,19 @@ the market catalog from the API, and you can:
   certainty score.
 - Inspect the **ridgeline** plot of certainty distributions across traded-volume bands.
 
-### Regenerate the data (optional)
+
+### Data pipeline (`backend/`) (optional)
+
+| Input | Notes |
+|-------|-------|
+| `SII-WANGZJ/Polymarket_data` (Hugging Face) | Raw markets, trades, quant, and users Parquet files — downloaded automatically by the scripts |
+| `backend/data/polymarket_dataset.csv` | Labeled CSV used to train the classifier (`train.py`) |
+| Polymarket Gamma API (`gamma-api.polymarket.com`) | Live source for event tags (`fetch_event_tags.py`) |
+
+Pipeline outputs land in `backend/data/` (e.g. `markets_classified.parquet`,
+`market_uncertainty.parquet`) and `backend/results/` (plots + summaries). To serve them,
+copy the relevant outputs into `backend-api/data/`.
+
 
 Run from the `backend/src/` directory. Each script reads/writes Parquet under `backend/data/`:
 
