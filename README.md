@@ -46,6 +46,8 @@ prebuilt Parquet files are already checked in under `backend-api/data/`.
 
 ### Backend API Data (`backend-api/`) — required to serve the dashboard
 
+📦 **Download Data Here** - [Link](https://ucdavis.box.com/s/eu3d52knd8kzyqjfpxse1ec1n94mdog2)
+
 These local Parquet files must exist in `backend-api/data/` (~1.1 GB total):
 
 | File | Size | Used by | Purpose |
@@ -110,15 +112,16 @@ the market catalog from the API, and you can:
 
 ### Data pipeline (`backend/`) (optional)
 
+📦 **Download Data Here** - [Link](https://ucdavis.box.com/s/v7teax2zcngecx4ollh217fzqczysih3)
+
+Unzip the data into `backend/data/`.
+
 | Input | Notes |
 |-------|-------|
 | `SII-WANGZJ/Polymarket_data` (Hugging Face) | Raw markets, trades, quant, and users Parquet files — downloaded automatically by the scripts |
-| `backend/data/polymarket_dataset.csv` | Labeled CSV used to train the classifier (`train.py`) |
+| `backend/data/polymarket_training_dataset.csv` | Labeled CSV used to train the classifier (`train.py`) |
+| `backend/data/polymarket_dataset_test.csv` | Labeled CSV used to test the classifier (`test.py`) |
 | Polymarket Gamma API (`gamma-api.polymarket.com`) | Live source for event tags (`fetch_event_tags.py`) |
-
-Pipeline outputs land in `backend/data/` (e.g. `markets_classified.parquet`,
-`market_uncertainty.parquet`) and `backend/results/` (plots + summaries). To serve them,
-copy the relevant outputs into `backend-api/data/`.
 
 
 Run from the `backend/src/` directory. Each script reads/writes Parquet under `backend/data/`:
