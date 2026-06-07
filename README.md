@@ -153,5 +153,5 @@ so the API serves the new data.
 └── frontend/           # React + Vite + D3 dashboard
     └── src/
         ├── App.jsx
-        └── components/ # KPIGrid, SankeyChart, DualAxisChart, CertaintyVolumeRidgeline, DashboardHeader
+        └── components/ # KPIGrid, SankeyChart, Timelinechart, CertaintyVolumeRidgeline, DashboardHeader
 ```

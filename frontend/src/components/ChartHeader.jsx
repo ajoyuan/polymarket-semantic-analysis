@@ -1,5 +1,6 @@
 import React from 'react';
 
+//standardized chart header style for the blue welcome snippets on the different pages
 export default function ChartHeader({ title, description, howTo }) {
   return (
     <div style={{

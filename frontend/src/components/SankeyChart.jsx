@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
 
 export default function SankeyChart({ catalog, selectedGenre, selectedCategory, onNodeClick, onLinkClick }) {
+
   const svgRef = useRef();
 
   useEffect(() => {
@@ -10,6 +11,7 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
     
     d3.select(svgRef.current.parentNode).selectAll(".sankey-tooltip").remove();
     
+    // Custom Info Tooltip style, serves as template for the hovering tool tip elements
     const tooltip = d3.select(svgRef.current.parentNode)
       .append("div")
       .attr("class", "sankey-tooltip")
@@ -27,13 +29,17 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("white-space", "nowrap")
       .style("z-index", 100);
 
+    // Calculates the user's mouse position and flips the tooltip to the left side 
+    // if it detects that the text is about to clip off the right side of the user's screen.
     const positionTooltip = (event) => {
+      // d3.pointer extracts the exact X,Y pixel coordinates of the mouse event relative to the parent container
       const [x, y] = d3.pointer(event, svgRef.current.parentNode);
       const containerWidth = svgRef.current.parentNode.clientWidth;
       const tooltipWidth = tooltip.node().offsetWidth; 
       
       let finalX = x + 15;
       
+      // If the tooltip's right edge pushes past the container's width, physically flip its X coordinate to the left of the mouse
       if (finalX + tooltipWidth + 20 > containerWidth) {
         finalX = x - tooltipWidth - 15;
       }
@@ -41,12 +47,16 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       tooltip.style("left", finalX + "px").style("top", (y + 15) + "px");
     };
 
+
+    // Goes through the market catalog and groups them by their Genre -> Semantic Category path.
     const totalMarkets = catalog.length;
     const flowCounts = {};
     catalog.forEach(market => {
+      // Capitalize the first letter for cleaner UI presentation
       let source = market.category ? market.category.charAt(0).toUpperCase() + market.category.slice(1) : 'Unknown';
       let target = market.predicted_label ? market.predicted_label.charAt(0).toUpperCase() + market.predicted_label.slice(1) : 'Unclassified';
       
+      // Creates a unique hash key (e.g., "Crypto|Stochastic") to count how many markets share this exact pathway
       const key = `${source}|${target}`;
       flowCounts[key] = (flowCounts[key] || 0) + 1;
     });
@@ -67,44 +77,57 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
     Object.entries(flowCounts).forEach(([key, value]) => {
       const [sourceName, targetName] = key.split('|');
       
+      // Cache the raw, unadulterated market count for the tooltip text
       nodeRealTotals.set(sourceName, (nodeRealTotals.get(sourceName) || 0) + value);
       nodeRealTotals.set(targetName, (nodeRealTotals.get(targetName) || 0) + value);
 
       links.push({ 
         source: getNodeIdx(sourceName), 
         target: getNodeIdx(targetName), 
-        realValue: value,               
-        value: Math.sqrt(value)         
+        realValue: value,              
+        // Visual Normalization
+        // If we plotted raw values, small categories would be 1px thin and unclickable.
+        // Taking the square root normalizes the visual flow while preserving the relational hierarchy.
+        value: Math.sqrt(value)        
       });
     });
 
+    // Finalizes the strictly formatted object { nodes: [], links: [] } required by the D3 Sankey generator
     const nodes = Array.from(nodesMap.values()).map(n => ({ name: n.name }));
     const data = { nodes, links };
 
+    // ==========================================
+    // SANKEY CATEGORY BAR INITIALIZATION & SCALING
+    // ==========================================
     const width = 800;
     const height = 400;
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove(); 
+    // viewBox allows the SVG to scale responsively like an image, rather than hard-coding pixel sizes
     svg.attr("viewBox", `0 0 ${width} ${height}`).style("width", "100%").style("height", "auto");
 
+    // Configures the sankey generator that will claculate the X/Y coordinates for all boxes and paths
     const sankeyGenerator = sankey()
       .nodeWidth(20)
       .nodePadding(25)
       .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
       .nodeAlign(sankeyJustify); 
 
+    // Executes the sankey layout engine
     const { nodes: graphNodes, links: graphLinks } = sankeyGenerator(data);
 
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
     const getTargetColor = (name) => {
+      // Hardcode our three primary semantic categories to match the rest of the application's branding
       if (name === 'Decision-Agent') return '#e53e3e'; 
       if (name === 'Objective Outcome') return '#3182ce'; 
       if (name === 'Stochastic') return '#718096'; 
-      return colorScale(name);
+      return colorScale(name); // Auto-assign a color to the Genres (sports, crypto, etc.)
     };
 
+    // Dims the opacity of unselected paths to immediately make it clear what the active dashboard filter is.
     const getLinkOpacity = (d) => {
       if (selectedGenre === 'All' && selectedCategory === 'All') return 0.35;
       const formattedGenre = selectedGenre === 'All' ? 'All' : selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1);
@@ -115,6 +138,9 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       return (matchesGenre && matchesCategory) ? 0.8 : 0.05; 
     };
 
+    // ==========================================
+    // RENDER FLOWING PATHS (flow paths between the sankey categories)
+    // ==========================================
     const linkGroup = svg.append("g")
       .attr("fill", "none")
       .selectAll("g")
@@ -124,6 +150,7 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("mix-blend-mode", "multiply");
 
     linkGroup.append("path")
+      // sankeyLinkHorizontal() is a built-in D3 helper that calculates the perfect bezier curves between the source and target nodes
       .attr("d", sankeyLinkHorizontal())
       .attr("stroke", d => getTargetColor(d.target.name))
       .attr("stroke-width", d => Math.max(1, d.width)) 
@@ -153,12 +180,16 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
         if (onLinkClick) onLinkClick(d.source.name, d.target.name);
       });
 
+    // ==========================================
+    // RENDER THE STATIC NODES (The vertical category bars that the sankey lines flow between)
+    // ==========================================
     const nodeGroup = svg.append("g")
       .selectAll("g.node")
       .data(graphNodes)
       .enter()
       .append("g");
 
+    // The actual visible category rectangle
     nodeGroup.append("rect")
       .attr("x", d => d.x0)
       .attr("y", d => d.y0)
@@ -175,6 +206,9 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
       .style("transition", "opacity 0.4s ease")
       .attr("rx", 3);
 
+    // Adds a wider, invisible rectangle directly over the visual node.
+    // WHY: Some node classifications are extremely thin. This gives the user a larger, 
+    // more forgiving "hitbox" to successfully trigger hover tooltips and click events without extreme mouse precision.
     nodeGroup.append("rect")
       .attr("x", d => d.x0 - 5) 
       .attr("y", d => ((d.y1 + d.y0) / 2) - (Math.max(24, d.y1 - d.y0) / 2)) 
@@ -204,7 +238,9 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
         if (onNodeClick) onNodeClick(d.name); 
       });
       
+    // Append the label text next to the nodes
     nodeGroup.append("text")
+      // Logic to place the text on the left or right of the node depending on which half of the screen it occupies
       .attr("x", d => d.x0 < width / 2 ? d.x1 + 8 : d.x0 - 8)
       .attr("y", d => (d.y1 + d.y0) / 2)
       .attr("dy", "0.35em")
@@ -222,10 +258,11 @@ export default function SankeyChart({ catalog, selectedGenre, selectedCategory, 
         return 0.3;
       })
       .style("transition", "opacity 0.4s ease")
-      .style("pointer-events", "none");
+      .style("pointer-events", "none"); // Prevents the text from stealing mouse hover events from the invisible hitbox
 
   }, [catalog, selectedGenre, selectedCategory]); 
 
+  // Prevents the component from rendering a broken empty box if data hasn't loaded yet
   if (!catalog || catalog.length === 0) return null;
 
   return (

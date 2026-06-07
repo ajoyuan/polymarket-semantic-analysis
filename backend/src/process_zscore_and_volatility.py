@@ -212,6 +212,7 @@ def compute_market_features(group: pd.DataFrame) -> pd.DataFrame:
     if pd.isna(global_std) or global_std < 0.00001: 
         group['vol_zscore'] = 0
     else: 
+        # Calculate the Z-score, but physically cap it between -20 and 20
         group['vol_zscore'] = ((roll_std - roll_std.mean()) / global_std).clip(lower=-20, upper=20)
     return group
 
