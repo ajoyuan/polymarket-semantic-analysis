@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+// Standardized KPI style card template
+// WHY: Decoupling this from the main grid prevents massive code duplication. 
+// standardizes the hover-state logic so the custom tooltips behave identically across all metrics.
 const Card = ({ title, value, subtext, color = '#2b6cb0', explanation, setTooltip }) => (
   <div 
     onMouseLeave={() => setTooltip(prev => ({ ...prev, visible: false }))}
@@ -16,6 +19,9 @@ const Card = ({ title, value, subtext, color = '#2b6cb0', explanation, setToolti
   >
     <h4 style={{ margin: '0 0 8px 0', color: '#a0aec0', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
       {title}{' '}
+      {/* Mouse Tracking
+        Minor mouse tracking element to the Toolbox, makes it so the tooltip hitbox feels less restrictive and more dynamic
+      */}
       <span 
         onMouseEnter={(e) => setTooltip({ visible: true, content: explanation, x: e.clientX, y: e.clientY })}
         onMouseMove={(e) => setTooltip(prev => ({ ...prev, x: e.clientX, y: e.clientY }))}
@@ -38,8 +44,15 @@ const Card = ({ title, value, subtext, color = '#2b6cb0', explanation, setToolti
 );
 
 export default function KPIGrid({ stats, currentLabel, certainty }) {
+  // Global tooltip state shared by all KPI Card components
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
 
+  // ==========================================
+  // ARIMAX Baseline coefficient logic
+  // ==========================================
+  // Hardcodes the universal ARIMAX momentum weights based on the active market's semantic category.
+  // WHY: Because ARIMAX coefficients are global structural constants derived from our Colab model, 
+  // they are tied to the semantic label rather than the individual market's localized timeline data.
   let arimaxVal = "0.002";
   let arimaxColor = "#718096";
   let arimaxText = "The market moves randomly regardless of past data.";
@@ -54,17 +67,29 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
     arimaxText = "Volatility is anchored to predictable external events";
   }
 
+  // ==========================================
+  // IMPLEMENTATION CONSIDERATION: Defensive Programming
+  // ==========================================
+  // Strict undefined checks with safe fallback values ("0", "0%") because the frontend renders faster than the DuckDB backend can calculate Z-scores, 
+  // Checks prevent the React app from crashing with a "Cannot read property of undefined" error during initial data loads.
   const safeTrades = stats?.totalTrades !== undefined ? stats.totalTrades.toLocaleString() : 0;
   const safeMaxZ = stats?.maxZ !== undefined ? `${stats.maxZ} σ` : "0 σ";
   const safeAnomaly = stats?.anomalyPct !== undefined ? stats.anomalyPct : "0%";
 
-
+  // ==========================================
+  // TWAP CERTAINTY SCORING
+  // ==========================================
+  // WHAT: Converts a raw 0.0 to 1.0 certainty float into human-readable sentiment buckets.
   const twapScore = certainty?.uncertainty_twap;
   const hasTwap = twapScore !== undefined && twapScore !== null;
   const safeTwap = hasTwap ? twapScore.toFixed(4) : "—";
+  
   let twapColor = "#a0aec0";
   let twapText = "No certainty data";
+  
   if (hasTwap) {
+    // WHY: We use statistical thirds to categorize the market. 
+    // >0.66 implies a decided market, <0.33 implies total chaos/coin-flip.
     if (twapScore >= 0.66) {
       twapColor = "#38a169";
       twapText = "Market is largely decided on the predictions";
@@ -79,6 +104,8 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
 
   return (
     <>
+      {/* KPI cards: Total transactions, ARIMAX coefficient, Max Z-score, Anomaly percentage, TWAP score*/}
+      {/* Defines the title, value, the subtext, color, and the tooltip function that pops up the help bubble*/}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '30px' }}>
         <Card 
           title="Total transactions" 
@@ -117,12 +144,14 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
           value={safeTwap} 
           subtext={twapText} 
           color={twapColor} 
-          explanation="A time-weighted measure of market certainty score ranges from 0 to 1. High values indicate a market that has been largely decided for most of its life (majority YES or NO).
-           Low value indicates a market are undecided on the outcome during the trading period."
+          explanation="A time-weighted measure of market certainty score ranges from 0 to 1. High values indicate a market that has been largely decided for most of its life (majority YES or NO). Low value indicates a market are undecided on the outcome during the trading period."
           setTooltip={setTooltip}
         />
       </div>
 
+      {/*
+        Tooltip element for the KPI bars, lets users see the explination portion of the card and prevents it from clipping with other KPI card boxes.
+      */}
       {tooltip.visible && (
         <div style={{
           position: 'fixed',
