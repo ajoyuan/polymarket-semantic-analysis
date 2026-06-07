@@ -63,6 +63,7 @@ Dependencies for both the API and the Data pipeline live in a single `requiremen
 at the project root.
 
 ```bash
+cd backend-api
 python -m venv .venv && source .venv/bin/activate    # optional but recommended
 pip install -r requirements.txt
 ```
@@ -77,6 +78,13 @@ npm install
 ```
 
 Key dependencies: React 19, Vite 6, d3 / d3-sankey, tailwindcss.
+
+### 3. Backend Data Pipeline (optional)
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate    # optional but recommended
+pip install -r requirements.txt
+```
 
 ## Development
 
