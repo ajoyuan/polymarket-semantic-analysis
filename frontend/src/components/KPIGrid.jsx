@@ -85,8 +85,8 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
   let twapText = "No certainty data";
   
   if (hasTwap) {
-    // WHY: We use statistical thirds to categorize the market. 
-    // >0.66 implies a decided market, <0.33 implies total chaos/coin-flip.
+    // given twapscore, a twap label is assigned 
+
     if (twapScore >= 0.66) {
       twapColor = "#38a169";
       twapText = "Market is largely decided on the predictions";

@@ -107,7 +107,7 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
               </div>
             ))}
             
-            {/* Displays the message telling them that there are more than 50 bets with the current filter criteria */}
+            {/* Displays the message telling user that there are more than 50 markets with the current filter criteria if there are more than 50 markets*/}
             {filteredCatalog.length > 50 && (
               <div style={{ padding: '12px', textAlign: 'center', fontSize: '12px', color: '#a0aec0', fontStyle: 'italic', background: '#f7fafc' }}>
                 Showing top 50 results. Keep typing to narrow it down...

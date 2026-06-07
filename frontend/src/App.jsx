@@ -54,8 +54,6 @@ export default function DashboardApp() {
 
 
   // 2. TIMELINE DATA: Fetch the specific historical data whenever the user selects a new market.
-  // WHY: We isolate this in its own useEffect listening to `selectedId` so we don't 
-  // re-fetch the massive catalog data every time the user just wants to change the chart view.
   useEffect(() => {
     if (!selectedId) return;
 
@@ -96,9 +94,7 @@ export default function DashboardApp() {
     fetchUncertainty();
   }, [selectedId]);
 
-  // 4. MACRO RIDGELINE DATA: Fetch the global Certainty vs Volume data.
-  // WHY: Uses a cancellation token pattern (`cancelled` boolean) to prevent React 
-  // memory leaks if the user navigates away from the tab before the large payload finishes downloading.
+  // 4. RIDGELINE DATA: Fetch the global Certainty vs Volume data.
   useEffect(() => {
     let cancelled = false;
     const fetchRidgeline = async () => {
@@ -132,7 +128,7 @@ export default function DashboardApp() {
     return matchGenre && matchCat;
   });
   
-  // IMPLEMENTATION CONSIDERATION: Filter Synchronization
+  // Filter Synchronization
   // WHY: If a user has Market A selected, and then filters the dashboard to a category 
   // that Market A doesn't belong to, the app would crash. This useEffect detects that edge case 
   // and boots the user safely back to the first available market in the new filtered list.
