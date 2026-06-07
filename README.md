@@ -44,7 +44,7 @@ prebuilt Parquet files are already checked in under `backend-api/data/`.
   training but not required for serving)
 - **Node.js 18+** and npm
 
-### Backend API Data (`backend-api/`) — required to serve the dashboard
+### [Required] Backend API Data (`backend-api/`) — required to serve the dashboard
 
 📦 **Download Data Here** - [Link](https://ucdavis.box.com/s/eu3d52knd8kzyqjfpxse1ec1n94mdog2)
 
