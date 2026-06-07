@@ -67,9 +67,6 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
     arimaxText = "Volatility is anchored to predictable external events";
   }
 
-  // ==========================================
-  // IMPLEMENTATION CONSIDERATION: Defensive Programming
-  // ==========================================
   // Strict undefined checks with safe fallback values ("0", "0%") because the frontend renders faster than the DuckDB backend can calculate Z-scores, 
   // Checks prevent the React app from crashing with a "Cannot read property of undefined" error during initial data loads.
   const safeTrades = stats?.totalTrades !== undefined ? stats.totalTrades.toLocaleString() : 0;
@@ -88,8 +85,8 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
   let twapText = "No certainty data";
   
   if (hasTwap) {
-    // WHY: We use statistical thirds to categorize the market. 
-    // >0.66 implies a decided market, <0.33 implies total chaos/coin-flip.
+    // given twapscore, a twap label is assigned 
+
     if (twapScore >= 0.66) {
       twapColor = "#38a169";
       twapText = "Market is largely decided on the predictions";
@@ -150,7 +147,7 @@ export default function KPIGrid({ stats, currentLabel, certainty }) {
       </div>
 
       {/*
-        Tooltip element for the KPI bars, lets users see the explination portion of the card and prevents it from clipping with other KPI card boxes.
+        Tooltip element for the KPI bars, lets users see the explination portion of the card when they hover their mouse and prevents it from clipping with other KPI card boxes.
       */}
       {tooltip.visible && (
         <div style={{
