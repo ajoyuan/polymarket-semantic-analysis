@@ -25,7 +25,6 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
 
   // Filters the incoming catalog array based on user input.
   // WHY: Allows the user to search by natural text (e.g., "Bitcoin") OR by the exact database ID (e.g., "8242"), 
-  // using `.toLowerCase()` to ensure the search is strictly case-insensitive.
   const filteredCatalog = catalog.filter(market => {
     const term = searchTerm.toLowerCase();
     const matchesQuestion = market.question?.toLowerCase().includes(term);
@@ -52,8 +51,8 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '10px' }} ref={dropdownRef}>
         <label style={{ fontWeight: 'bold', color: '#4a5568' }}>Search & Select Target Market ({catalog.length.toLocaleString()} Loaded):</label>
         
-        {/* IMPLEMENTATION CONSIDERATION: Dynamic Input States
-            WHY: Disables the input and changes the cursor to a "wait" spinner if the massive 
+        {/* 
+            Disables the input and changes the cursor to a "wait" spinner if the massive 
             DuckDB pipeline is still booting up, preventing the user from searching an empty array.
         */}
         <input 
@@ -87,7 +86,7 @@ export default function DashboardHeader({ catalog, selectedId, onSelect }) {
               <div 
                 key={market.id}
                 onClick={() => {
-                  onSelect(market.id); // Elevate the new ID back to the parent DashboardApp
+                  onSelect(market.id);
                   setIsOpen(false);
                   setSearchTerm('');
                 }}
