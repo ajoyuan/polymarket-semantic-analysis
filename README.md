@@ -57,6 +57,11 @@ These local Parquet files must exist in `backend-api/data/` (~1.1 GB total):
 | `market_uncertainty.parquet` | ~88 MB | `/api/dashboard/uncertainty`, `/certainty_volume_ridgeline` | TWAP/VWAP/last-price certainty scores per market |
 | `markets_classified_with_event_tags.parquet` | ~342 MB | `/api/markets/*` | Classified markets enriched with event tags |
 
+### 0. Ensure backend-api data is ready
+Ensure that you have your data in the backend-api directory
+
+This requires you to create a new folder named `data` in the backend-api in which, you must place thee parquet files you downloaded from the box link
+
 ### 1. Backend API
 
 Dependencies for both the API and the Data pipeline live in a single `requirements.txt`
