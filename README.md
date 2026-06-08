@@ -60,7 +60,9 @@ These local Parquet files must exist in `backend-api/data/` (~1.1 GB total):
 ### 0. Ensure backend-api data is ready
 Ensure that you have your data in the backend-api directory
 
-This requires you to create a new folder named `data` in the backend-api in which, you must place thee parquet files you downloaded from the box link
+This requires you to create a new folder named `data` in the `backend-api` directory. 
+
+In this `data` folder, you must place the parquet files you downloaded from the box link 
 
 ### 1. Backend API
 
